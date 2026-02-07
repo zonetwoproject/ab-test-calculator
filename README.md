@@ -233,8 +233,7 @@ MIT License
 
 ## 👤 제작자
 
-Made with ❤️ for PMs
-
+built by zonetwo.project
 ---
 
 ## 🔗 관련 문서
