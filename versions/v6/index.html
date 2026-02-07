@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A/B 테스트 계산기 Mark5</title>
+    <script src="https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            background: white;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-with-unit {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-with-unit input {
+            flex: 1;
+        }
+
+        .unit {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 16px;
+            min-width: 30px;
+        }
+
+        .help-text {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 6px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 6px;
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .info-text.show {
+            display: block;
+        }
+
+        .mde-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .mde-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            transition: all 0.2s;
+        }
+
+        .mde-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .mde-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .example-text {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 6px;
+        }
+
+        .allocation-description {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #f9fafb;
+            border-left: 3px solid #667eea;
+            font-size: 13px;
+            color: #374151;
+            border-radius: 4px;
+        }
+
+        .custom-allocation {
+            margin-top: 12px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .custom-allocation.show {
+            display: block;
+        }
+
+        .custom-inputs {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .custom-inputs input {
+            width: 80px;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 8px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-section {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .result-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-main {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .result-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .result-card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .result-card-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .result-card-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .slot-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #0ea5e9;
+        }
+
+        .slot-section h3 {
+            color: #0369a1;
+        }
+
+        .slot-range {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .slot-range-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .slot-range-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .slot-range-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0369a1;
+        }
+
+        .estimation-info {
+            margin-top: 16px;
+            padding: 16px;
+            background: #fffbeb;
+            border-left: 3px solid #f59e0b;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #92400e;
+        }
+
+        .estimation-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #78350f;
+        }
+
+        .estimation-details {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #92400e;
+            line-height: 1.6;
+        }
+
+        .warning-box {
+            margin-top: 12px;
+            padding: 12px;
+            background: #fef2f2;
+            border-left: 3px solid #ef4444;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #991b1b;
+        }
+
+        .success-box {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f0fdf4;
+            border-left: 3px solid #10b981;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #065f46;
+        }
+
+        .collapsible {
+            margin-top: 12px;
+        }
+
+        .collapsible-header {
+            padding: 10px 12px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .collapsible-header:hover {
+            background: #e5e7eb;
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapsible-content.show {
+            max-height: 500px;
+        }
+
+        .collapsible-body {
+            padding: 12px;
+            font-size: 13px;
+            color: #4b5563;
+            line-height: 1.6;
+        }
+
+        .sql-code {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-top: 8px;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .mde-comparison {
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .mde-comparison.success {
+            background: #f0fdf4;
+            border-left: 3px solid #10b981;
+            color: #065f46;
+        }
+
+        .mde-comparison.warning {
+            background: #fffbeb;
+            border-left: 3px solid #f59e0b;
+            color: #92400e;
+        }
+
+        .mde-comparison.error {
+            background: #fef2f2;
+            border-left: 3px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .duration-btn {
+            padding: 4px 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin: 0 4px;
+        }
+
+        .duration-btn:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>A/B 테스트 계산기</h1>
+            <p>전환율 개선을 위한 샘플 수 계산</p>
+            <span class="version-badge">Mark5 - 방문 빈도 기반</span>
+        </div>
+
+        <div class="content">
+            <form id="calculator-form">
+                <!-- 1. 실험 기간 -->
+                <div class="form-group">
+                    <label for="prop-duration">1. 실험 기간은 며칠인가요?</label>
+                    <div class="input-with-unit">
+                        <input type="number" id="prop-duration" placeholder="14" value="14" step="1" min="1" required>
+                        <span class="unit">일</span>
+                        <span style="margin-left: 8px; color: #f59e0b; font-size: 14px;">⭐ 권장</span>
+                    </div>
+                    <div class="help-text">14일은 요일 효과를 제거하는 권장 기간입니다</div>
+                    <div class="info-text" id="duration-feedback"></div>
+                </div>
+
+                <!-- 2. 방문 빈도 (역순, 기본값 4.2) -->
+                <div class="form-group">
+                    <label for="visit-frequency">2. 실험 기간 동안 사용자가 이 지면을 몇 번 방문하나요?</label>
+                    <select id="visit-frequency">
+                        <option value="4.2" selected>평균 4회 이상 - 메인홈, 검색홈</option>
+                        <option value="3.0">평균 3회 - 가게목록, 가게상세, 검색결과</option>
+                        <option value="2.0">평균 1~2회 - 주문내역, 주소설정</option>
+                        <option value="1.2">평균 1회 - 주문완료, 결제성공</option>
+                    </select>
+                    <div class="help-text">한 사람이 실험 기간 동안 이 지면을 평균 몇 번 방문하는지 선택하세요</div>
+                </div>
+
+                <!-- 3. 하루 방문수 -->
+                <div class="form-group">
+                    <label for="prop-daily-visitors">3. 하루 몇 명이 방문하는 지면인가요?</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <div class="input-with-unit" style="flex: 1;">
+                            <input type="number" id="prop-daily-visitors" placeholder="예: 100000" step="1" min="1" required>
+                            <span class="unit">명/일</span>
+                        </div>
+                    </div>
+                    <div class="help-text">최근 2주~1개월 기준 하루 평균 방문자 수를 입력하세요</div>
+                    <div class="info-text" id="visitors-feedback"></div>
+                    <div id="preview-users" class="info-text" style="margin-top: 12px; padding: 12px; background: #eff6ff; border-left: 3px solid #3b82f6; border-radius: 6px; display: none;"></div>
+                </div>
+
+                <!-- 4. 배분 비율 -->
+                <div class="form-group">
+                    <label for="prop-allocation">4. 실험군 배분 비율은 어떻게 하시겠어요?</label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <select id="prop-allocation" style="flex: 1;">
+                            <option value="50:50" selected>50:50</option>
+                            <option value="60:40">60:40</option>
+                            <option value="70:30">70:30</option>
+                            <option value="80:20">80:20</option>
+                            <option value="custom">직접 입력</option>
+                        </select>
+                        <span style="color: #f59e0b; font-size: 14px; font-weight: 600; white-space: nowrap;">⭐ 권장</span>
+                    </div>
+                    <div class="allocation-description" id="allocation-description">
+                        ⭐ 가장 효율적인 배분 비율입니다 (기본값)
+                    </div>
+                    <div class="custom-allocation" id="custom-allocation">
+                        <label style="font-size: 13px; margin-bottom: 8px;">배분 비율 직접 입력</label>
+                        <div class="custom-inputs">
+                            <div>
+                                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">대조군</div>
+                                <input type="number" id="custom-control" placeholder="50" min="1" max="99">
+                            </div>
+                            <div style="font-size: 20px; color: #9ca3af;">:</div>
+                            <div>
+                                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">실험군</div>
+                                <input type="number" id="custom-treatment" placeholder="50" min="1" max="99">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. 현재 지표 -->
+                <div class="form-group">
+                    <label for="prop-baseline">5. 목표 지표의 현재 수준은 얼마인가요?</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <div class="input-with-unit" style="flex: 1;">
+                            <input type="number" id="prop-baseline" placeholder="예: 3" step="0.01" min="0" max="100" required>
+                            <span class="unit">%</span>
+                        </div>
+                    </div>
+                    <div class="help-text">현재 전환율, 클릭률 등의 지표를 입력하세요</div>
+                    <div id="mde-preview" style="margin-top: 12px; padding: 16px; background: #f0fdf4; border-left: 3px solid #10b981; border-radius: 8px; display: none;">
+                        <div style="font-size: 14px; color: #059669; margin-bottom: 8px;">🎯 이 조건에서 검증 가능한 범위</div>
+                        <div style="font-size: 14px; color: #065f46;">
+                            최소 <strong id="mde-value" style="color: #059669; font-size: 18px;"></strong> 개선부터 통계적으로 확인 가능
+                        </div>
+                        <div id="mde-explanation" style="font-size: 13px; color: #047857; margin-top: 6px;"></div>
+                    </div>
+                </div>
+
+                <!-- 6. 목표 개선 -->
+                <div class="form-group">
+                    <label for="prop-mde">6. 이 지표를 얼마나 개선하고 싶으신가요?</label>
+                    <div class="mde-buttons">
+                        <button type="button" class="mde-btn" data-value="5">+5%</button>
+                        <button type="button" class="mde-btn" data-value="10">+10%</button>
+                        <button type="button" class="mde-btn" data-value="15">+15%</button>
+                        <button type="button" class="mde-btn" data-value="20">+20%</button>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <div class="input-with-unit" style="flex: 1;">
+                            <input type="number" id="prop-mde" placeholder="예: 5" step="0.1" min="0" required>
+                            <span class="unit">%</span>
+                        </div>
+                    </div>
+                    <div class="example-text" id="mde-example" style="display: none;">목표 개선율을 입력하세요</div>
+                    <div id="mde-comparison" style="margin-top: 12px; padding: 16px; border-radius: 8px; display: none;"></div>
+                </div>
+
+                <!-- 고급 설정 -->
+                <div class="collapsible" style="margin-top: 24px; margin-bottom: 16px;">
+                    <div class="collapsible-header" id="advanced-toggle">
+                        ⚙️ 고급 설정 (선택사항)
+                    </div>
+                    <div class="collapsible-content" id="advanced-content">
+                        <div class="collapsible-body">
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="alpha-level" style="font-size: 14px;">유의수준 (Alpha)</label>
+                                <select id="alpha-level" style="font-size: 14px;">
+                                    <option value="0.05" selected>0.05 (5%) - 권장</option>
+                                    <option value="0.01">0.01 (1%) - 엄격</option>
+                                    <option value="0.10">0.10 (10%) - 완화</option>
+                                </select>
+                                <div class="help-text">1종 오류 확률 (잘못된 긍정)</div>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="power-level" style="font-size: 14px;">검정력 (Power)</label>
+                                <select id="power-level" style="font-size: 14px;">
+                                    <option value="0.80" selected>0.80 (80%) - 권장</option>
+                                    <option value="0.90">0.90 (90%) - 높음</option>
+                                    <option value="0.70">0.70 (70%) - 낮음</option>
+                                </select>
+                                <div class="help-text">2종 오류를 피할 확률</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="calculate-btn">계산하기</button>
+            </form>
+
+            <!-- 결과 영역 -->
+            <div class="results" id="results">
+                <!-- 샘플 결과 -->
+                <div class="result-section">
+                    <h3>📊 필요 샘플</h3>
+                    <div class="result-cards">
+                        <div class="result-card">
+                            <div class="result-card-label">대조군 (A안)</div>
+                            <div class="result-card-value" id="result-control"></div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-card-label">실험군 (B안)</div>
+                            <div class="result-card-value" id="result-treatment"></div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-card-label">총 필요 샘플</div>
+                            <div class="result-card-value" id="result-total"></div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-card-label">배분 효율</div>
+                            <div class="result-card-value" id="result-efficiency"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 슬롯 결과 -->
+                <div class="result-section slot-section">
+                    <h3>🎰 슬롯 배분</h3>
+                    <div class="result-main"><span id="result-slot-range"></span></div>
+                    <div class="result-label" id="result-slot-percentage"></div>
+                    
+                    <div class="slot-range">
+                        <div class="slot-range-item">
+                            <div class="slot-range-label">대조군 슬롯</div>
+                            <div class="slot-range-value" id="result-control-slots"></div>
+                        </div>
+                        <div class="slot-range-item">
+                            <div class="slot-range-label">실험군 슬롯</div>
+                            <div class="slot-range-value" id="result-treatment-slots"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 추정 정보 -->
+                <div class="result-section">
+                    <h3>📈 고유 유저 추정</h3>
+                    <div class="estimation-info">
+                        <h4>🧮 계산 과정</h4>
+                        <div id="estimation-calculation"></div>
+                        <div class="estimation-details" id="estimation-details"></div>
+                    </div>
+                </div>
+
+                <!-- SQL 쿼리 -->
+                <div class="collapsible">
+                    <div class="collapsible-header" id="detail-toggle">
+                        📝 슬롯 추출 쿼리 보기
+                    </div>
+                    <div class="collapsible-content" id="detail-content">
+                        <div class="collapsible-body">
+                            <p style="margin-bottom: 8px;">아래 쿼리를 복사해서 사용하세요:</p>
+                            <div class="sql-code" id="sql-query"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Built by <a href="mailto:zonetwo.project@gmail.com">zonetwo.project</a> | 
+            <a href="https://github.com/jabezpark/ab-test-calculator" target="_blank">GitHub</a>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 설정
+        // ============================================
+        const CONFIG = {
+            K_VALUES: {
+                '4.2': {
+                    k: 4.2,
+                    label: '평균 4회 이상',
+                    examples: '메인홈, 검색홈',
+                    emoji: '🏠',
+                    message: '메인홈처럼 자주 방문하는 지면이라 한 사람이 4번 이상 들어올 거예요'
+                },
+                '3.0': {
+                    k: 3.0,
+                    label: '평균 3회',
+                    examples: '가게목록, 가게상세, 검색결과',
+                    emoji: '🔍',
+                    message: '평균 3회 방문하는 지면이라 실제 사람 수는 방문 수의 1/3 정도예요'
+                },
+                '2.0': {
+                    k: 2.0,
+                    label: '평균 1~2회',
+                    examples: '주문내역, 주소설정',
+                    emoji: '📋',
+                    message: '평균 1~2회 방문하는 지면이라 절반 정도가 같은 사람의 재방문이에요'
+                },
+                '1.2': {
+                    k: 1.2,
+                    label: '평균 1회',
+                    examples: '주문완료, 결제성공',
+                    emoji: '🎯',
+                    message: '주문완료처럼 1회성 지면이라 거의 모든 방문이 다른 사람이에요'
+                }
+            },
+            TOTAL_SLOTS: 10000,
+            ALLOCATION_DESCRIPTIONS: {
+                '50:50': '⭐ 가장 효율적인 배분 비율입니다 (기본값)',
+                '60:40': '균형잡힌 배분 비율입니다',
+                '70:30': '실험군 비중을 낮춘 배분입니다',
+                '80:20': '🛡️ 리스크를 최소화하는 배분 비율입니다',
+                'custom': '직접 지정한 배분 비율입니다'
+            }
+        };
+
+        // ============================================
+        // 헬퍼 함수
+        // ============================================
+        function getKValue(visitFrequency) {
+            const kData = CONFIG.K_VALUES[visitFrequency];
+            if (!kData) {
+                console.error('Invalid visit frequency:', visitFrequency);
+                return 3.0; // fallback to medium frequency
+            }
+            return kData.k;
+        }
+
+        function formatNumber(num) {
+            return num.toLocaleString('ko-KR');
+        }
+
+        function getDateRange(days) {
+            const today = new Date();
+            const endDate = new Date(today);
+            endDate.setDate(endDate.getDate() - 1);
+            
+            const startDate = new Date(endDate);
+            startDate.setDate(startDate.getDate() - days + 1);
+            
+            return {
+                start: startDate.toISOString().split('T')[0],
+                end: endDate.toISOString().split('T')[0]
+            };
+        }
+
+        // ============================================
+        // MDE 버튼 이벤트
+        // ============================================
+        document.querySelectorAll('.mde-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const value = this.dataset.value;
+                document.getElementById('prop-mde').value = value;
+                
+                document.querySelectorAll('.mde-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                updateMdeExample();
+                updateMDEComparison();
+            });
+        });
+
+        // ============================================
+        // MDE 예시 업데이트
+        // ============================================
+        function updateMdeExample() {
+            const baseline = parseFloat(document.getElementById('prop-baseline').value);
+            const mde = parseFloat(document.getElementById('prop-mde').value);
+            
+            if (baseline && mde) {
+                const newValue = baseline * (1 + mde / 100);
+                const exampleText = `예: ${baseline}% → ${newValue.toFixed(2)}% (${mde}% 상대 개선)`;
+                document.getElementById('mde-example').textContent = exampleText;
+                document.getElementById('mde-example').style.display = 'block';
+            } else if (baseline) {
+                document.getElementById('mde-example').textContent = '목표 개선율을 입력하세요';
+                document.getElementById('mde-example').style.display = 'block';
+            } else {
+                document.getElementById('mde-example').style.display = 'none';
+            }
+            
+            document.querySelectorAll('.mde-btn').forEach(btn => {
+                if (btn.dataset.value == mde) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        document.getElementById('prop-baseline').addEventListener('input', updateMdeExample);
+        document.getElementById('prop-mde').addEventListener('input', updateMdeExample);
+
+        // ============================================
+        // 배분 비율 변경
+        // ============================================
+        document.getElementById('prop-allocation').addEventListener('change', function() {
+            const value = this.value;
+            const description = document.getElementById('allocation-description');
+            const customDiv = document.getElementById('custom-allocation');
+            
+            description.textContent = CONFIG.ALLOCATION_DESCRIPTIONS[value];
+            
+            if (value === 'custom') {
+                customDiv.classList.add('show');
+            } else {
+                customDiv.classList.remove('show');
+            }
+        });
+
+        // ============================================
+        // 기간 가이드
+        // ============================================
+        document.getElementById('prop-duration').addEventListener('input', function() {
+            const days = parseInt(this.value);
+            const feedback = document.getElementById('duration-feedback');
+            
+            if (!days || days < 1) {
+                feedback.textContent = '❌ 1일 이상 입력하세요';
+                feedback.style.color = '#ef4444';
+                feedback.classList.add('show');
+                return;
+            }
+            
+            feedback.classList.add('show');
+            
+            if (days < 7) {
+                feedback.textContent = `💡 ${days}일은 7일 미만으로 요일 효과가 남을 수 있습니다`;
+                feedback.style.color = '#6b7280';
+            } else if (days === 7) {
+                feedback.textContent = '✅ 요일 효과를 제거하는 최소 권장 기간입니다';
+                feedback.style.color = '#10b981';
+            } else if (days >= 14) {
+                feedback.textContent = `✅ ${days}일은 요일 효과를 완전히 제거하는 충분한 기간입니다`;
+                feedback.style.color = '#10b981';
+            } else {
+                feedback.textContent = `✅ ${days}일은 적절한 기간입니다`;
+                feedback.style.color = '#10b981';
+            }
+        });
+
+        // ============================================
+        // 방문수 가이드
+        // ============================================
+        document.getElementById('prop-daily-visitors').addEventListener('input', function() {
+            const visitors = parseFloat(this.value);
+            const feedback = document.getElementById('visitors-feedback');
+            
+            if (!visitors || visitors < 1) {
+                feedback.textContent = '❌ 1명 이상 입력하세요';
+                feedback.style.color = '#ef4444';
+                feedback.classList.add('show');
+                return;
+            }
+            
+            if (visitors < 1000) {
+                feedback.textContent = '💡 방문수가 적어 실험 기간이 길어질 수 있습니다';
+                feedback.style.color = '#6b7280';
+                feedback.classList.add('show');
+            } else {
+                feedback.classList.remove('show');
+            }
+        });
+
+        // ============================================
+        // MDE 역계산 함수 (이진 탐색)
+        // ============================================
+        function calculateMDE(uniqueUsers, baseline, allocation, alpha, power) {
+            const p1 = baseline / 100;
+            
+            // Z-score 계산
+            const z_alpha = alpha === 0.05 ? 1.96 : (alpha === 0.01 ? 2.576 : 1.645);
+            const z_beta = power === 0.80 ? 0.84 : (power === 0.90 ? 1.282 : 0.524);
+            
+            // 배분 비율
+            let controlRatio, treatmentRatio;
+            if (allocation === 'custom') {
+                const control = parseInt(document.getElementById('custom-control').value) || 50;
+                const treatment = parseInt(document.getElementById('custom-treatment').value) || 50;
+                const total = control + treatment;
+                controlRatio = control / total;
+                treatmentRatio = treatment / total;
+            } else {
+                const [c, t] = allocation.split(':').map(Number);
+                const total = c + t;
+                controlRatio = c / total;
+                treatmentRatio = t / total;
+            }
+            const kappa = treatmentRatio / controlRatio;
+            
+            // 이진 탐색으로 MDE 찾기
+            let low = 0.001;  // 0.1%
+            let high = 2.0;   // 200%
+            let bestMDE = null;
+            const maxIterations = 50;
+            
+            for (let i = 0; i < maxIterations && (high - low) > 0.0001; i++) {
+                const mid = (low + high) / 2;
+                const p2 = p1 * (1 + mid);
+                
+                // 필요 샘플 계산
+                const n1 = Math.pow(z_alpha + z_beta, 2) * 
+                           (p1 * (1 - p1) + p2 * (1 - p2) / kappa) /
+                           Math.pow(p2 - p1, 2);
+                const n2 = n1 * kappa;
+                const requiredN = Math.ceil(n1 + n2);
+                
+                if (requiredN <= uniqueUsers) {
+                    bestMDE = mid;
+                    high = mid;
+                } else {
+                    low = mid;
+                }
+            }
+            
+            return bestMDE;
+        }
+
+        // ============================================
+        // 계산 함수
+        // ============================================
+        function calculateABTest(formData) {
+            const {baseline, mde, dailyVisitors, duration, allocation} = formData;
+            
+            // 1. 통계 파라미터
+            const alpha = parseFloat(document.getElementById('alpha-level').value);
+            const power = parseFloat(document.getElementById('power-level').value);
+            
+            const z_alpha = alpha === 0.05 ? 1.96 : (alpha === 0.01 ? 2.576 : 1.645);
+            const z_beta = power === 0.80 ? 0.84 : (power === 0.90 ? 1.282 : 0.524);
+            
+            // 2. 배분 비율 계산
+            let controlRatio, treatmentRatio;
+            if (allocation === 'custom') {
+                const control = parseInt(document.getElementById('custom-control').value) || 50;
+                const treatment = parseInt(document.getElementById('custom-treatment').value) || 50;
+                const total = control + treatment;
+                controlRatio = control / total;
+                treatmentRatio = treatment / total;
+            } else {
+                const [c, t] = allocation.split(':').map(Number);
+                const total = c + t;
+                controlRatio = c / total;
+                treatmentRatio = t / total;
+            }
+            
+            const kappa = treatmentRatio / controlRatio;
+            
+            // 3. 샘플 크기 계산
+            const p1 = baseline / 100;
+            const p2 = p1 * (1 + mde / 100);
+            
+            const n1 = Math.pow(z_alpha + z_beta, 2) * 
+                       (p1 * (1 - p1) + p2 * (1 - p2) / kappa) /
+                       Math.pow(p2 - p1, 2);
+            
+            const n2 = n1 * kappa;
+            const nTotal = Math.ceil(n1 + n2);
+            
+            // 4. 고유 유저 추정 (K값 나눗셈 방식)
+            const visitFrequency = document.getElementById('visit-frequency').value;
+            const kValue = getKValue(visitFrequency);
+            const estimatedUniqueUsers = Math.round((dailyVisitors * duration) / kValue);
+            
+            // 5. 슬롯 계산
+            const usersPerSlot = estimatedUniqueUsers / CONFIG.TOTAL_SLOTS;
+            const requiredSlots = Math.ceil(nTotal / usersPerSlot);
+            const slotsPercentage = (requiredSlots / CONFIG.TOTAL_SLOTS * 100).toFixed(2);
+            
+            // 6. 슬롯 범위
+            const controlSlots = Math.ceil(requiredSlots * controlRatio);
+            const treatmentSlots = requiredSlots - controlSlots;
+            
+            // 7. 효율성 계산
+            const treatmentPortion = treatmentRatio / (controlRatio + treatmentRatio);
+            const relativeEfficiency = 4 * treatmentPortion * (1 - treatmentPortion);
+            const efficiency = (relativeEfficiency * 100).toFixed(0);
+            
+            const sampleMultiplier = (1 / relativeEfficiency).toFixed(2);
+            const additionalPercent = ((1 / relativeEfficiency - 1) * 100).toFixed(0);
+            
+            return {
+                samples: {
+                    control: Math.ceil(n1),
+                    treatment: Math.ceil(n2),
+                    total: nTotal
+                },
+                slots: {
+                    total: requiredSlots,
+                    percentage: slotsPercentage,
+                    control: controlSlots,
+                    treatment: treatmentSlots
+                },
+                estimation: {
+                    uniqueUsers: estimatedUniqueUsers,
+                    kValue: kValue,
+                    dailyVisitors: dailyVisitors,
+                    duration: duration
+                },
+                efficiency: {
+                    value: efficiency,
+                    multiplier: sampleMultiplier,
+                    additionalPercent: additionalPercent
+                },
+                allocation: {
+                    control: controlRatio,
+                    treatment: treatmentRatio
+                }
+            };
+        }
+
+        // ============================================
+        // 결과 표시
+        // ============================================
+        function displayResults(result) {
+            // 샘플 수
+            document.getElementById('result-control').textContent = formatNumber(result.samples.control);
+            document.getElementById('result-treatment').textContent = formatNumber(result.samples.treatment);
+            document.getElementById('result-total').textContent = formatNumber(result.samples.total);
+            document.getElementById('result-efficiency').textContent = result.efficiency.value + '%';
+            
+            // 슬롯
+            document.getElementById('result-slot-range').textContent = `1~${formatNumber(result.slots.total)}`;
+            document.getElementById('result-slot-percentage').textContent = 
+                `전체 슬롯의 ${result.slots.percentage}% (10,000개 중 ${formatNumber(result.slots.total)}개)`;
+            document.getElementById('result-control-slots').textContent = `1~${formatNumber(result.slots.control)}`;
+            document.getElementById('result-treatment-slots').textContent = 
+                `${formatNumber(result.slots.control + 1)}~${formatNumber(result.slots.total)}`;
+            
+            // 추정 정보
+            const kData = CONFIG.K_VALUES[document.getElementById('visit-frequency').value];
+            document.getElementById('estimation-calculation').innerHTML = `
+                총 방문 수: ${formatNumber(result.estimation.dailyVisitors)} × ${result.estimation.duration}일 
+                = ${formatNumber(result.estimation.dailyVisitors * result.estimation.duration)}회<br>
+                추정 고유 유저: ${formatNumber(result.estimation.dailyVisitors * result.estimation.duration)}회 ÷ ${result.estimation.kValue} 
+                = <strong>${formatNumber(result.estimation.uniqueUsers)}명</strong>
+            `;
+            
+            document.getElementById('estimation-details').innerHTML = `
+                ${kData.emoji} <strong>${kData.label}</strong><br>
+                ${kData.message}
+            `;
+            
+            // SQL 쿼리
+            const dateRange = getDateRange(result.estimation.duration);
+            const sqlQuery = `SELECT
+    user_id,
+    CASE
+        WHEN MOD(ABS(FARM_FINGERPRINT(CAST(user_id AS STRING))), 10000) BETWEEN 0 AND ${result.slots.control - 1} THEN 'control'
+        WHEN MOD(ABS(FARM_FINGERPRINT(CAST(user_id AS STRING))), 10000) BETWEEN ${result.slots.control} AND ${result.slots.total - 1} THEN 'treatment'
+        ELSE 'excluded'
+    END AS test_group
+FROM \`your_project.your_dataset.your_table\`
+WHERE date BETWEEN '${dateRange.start}' AND '${dateRange.end}'
+GROUP BY user_id`;
+            
+            document.getElementById('sql-query').textContent = sqlQuery;
+            
+            // 결과 영역 표시
+            document.getElementById('results').classList.add('show');
+            
+            // 결과로 스크롤
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ============================================
+        // 폼 제출
+        // ============================================
+        document.getElementById('calculator-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                baseline: parseFloat(document.getElementById('prop-baseline').value),
+                mde: parseFloat(document.getElementById('prop-mde').value),
+                dailyVisitors: parseFloat(document.getElementById('prop-daily-visitors').value),
+                duration: parseInt(document.getElementById('prop-duration').value),
+                allocation: document.getElementById('prop-allocation').value
+            };
+            
+            console.log('입력 데이터:', formData);
+            
+            // 유효성 검사
+            if (!formData.baseline || formData.baseline <= 0 || formData.baseline >= 100) {
+                alert('현재 지표를 0~100 사이로 입력해주세요');
+                return;
+            }
+            
+            if (!formData.mde || formData.mde <= 0) {
+                alert('목표 개선폭을 0보다 큰 값으로 입력해주세요');
+                return;
+            }
+            
+            if (!formData.dailyVisitors || formData.dailyVisitors < 1) {
+                alert('하루 방문수를 입력해주세요');
+                return;
+            }
+            
+            if (!formData.duration || formData.duration < 1) {
+                alert('테스트 기간을 1일 이상으로 입력해주세요');
+                return;
+            }
+            
+            console.log('유효성 검사 통과, 계산 시작');
+            
+            try {
+                const result = calculateABTest(formData);
+                console.log('계산 결과:', result);
+                displayResults(result);
+                console.log('결과 표시 완료');
+            } catch (error) {
+                console.error('계산 중 에러:', error);
+                alert('계산 중 오류가 발생했습니다: ' + error.message);
+            }
+        });
+
+        // ============================================
+        // 상세 정보 토글
+        // ============================================
+        document.getElementById('detail-toggle').addEventListener('click', function() {
+            const content = document.getElementById('detail-content');
+            content.classList.toggle('show');
+        });
+
+        // ============================================
+        // 실시간 피드백: 고유 유저 예상
+        // ============================================
+        function updateUniqueUsersPreview() {
+            const dailyVisitors = parseFloat(document.getElementById('prop-daily-visitors').value);
+            const duration = parseInt(document.getElementById('prop-duration').value);
+            const visitFrequency = document.getElementById('visit-frequency').value;
+            const previewBox = document.getElementById('preview-users');
+            
+            if (!dailyVisitors || !duration || dailyVisitors < 1 || duration < 1) {
+                previewBox.style.display = 'none';
+                return;
+            }
+            
+            const kValue = getKValue(visitFrequency);
+            const kData = CONFIG.K_VALUES[visitFrequency];
+            const uniqueUsers = Math.round((dailyVisitors * duration) / kValue);
+            
+            previewBox.style.display = 'block';
+            previewBox.innerHTML = `
+                💡 예상 고유 유저: 약 <strong>${formatNumber(uniqueUsers)}명</strong><br>
+                <div style="font-size: 12px; color: #6b7280; margin-top: 6px;">
+                    📊 계산: (${formatNumber(dailyVisitors)} × ${duration}일) ÷ ${kValue} = ${formatNumber(uniqueUsers)}명
+                </div>
+                <div style="font-size: 12px; color: #6b7280; margin-top: 6px;">
+                    ${kData.emoji} ${kData.message}
+                </div>
+            `.trim();
+        }
+
+        document.getElementById('prop-daily-visitors').addEventListener('input', updateUniqueUsersPreview);
+        document.getElementById('prop-duration').addEventListener('input', updateUniqueUsersPreview);
+        document.getElementById('visit-frequency').addEventListener('change', updateUniqueUsersPreview);
+
+        // ============================================
+        // 실시간 피드백: MDE 자동 계산
+        // ============================================
+        function updateMDEPreview() {
+            const dailyVisitors = parseFloat(document.getElementById('prop-daily-visitors').value);
+            const duration = parseInt(document.getElementById('prop-duration').value);
+            const baseline = parseFloat(document.getElementById('prop-baseline').value);
+            const allocation = document.getElementById('prop-allocation').value;
+            const previewBox = document.getElementById('mde-preview');
+            
+            if (!dailyVisitors || !duration || !baseline || dailyVisitors < 1 || duration < 1 || baseline <= 0) {
+                previewBox.style.display = 'none';
+                return;
+            }
+            
+            // 고유 유저 계산
+            const visitFrequency = document.getElementById('visit-frequency').value;
+            const kValue = getKValue(visitFrequency);
+            const uniqueUsers = Math.round((dailyVisitors * duration) / kValue);
+            
+            // 통계 파라미터
+            const alpha = parseFloat(document.getElementById('alpha-level').value);
+            const power = parseFloat(document.getElementById('power-level').value);
+            
+            // MDE 계산
+            const mde = calculateMDE(uniqueUsers, baseline, allocation, alpha, power);
+            
+            if (mde) {
+                const mdePercent = (mde * 100).toFixed(1);
+                document.getElementById('mde-value').textContent = `${mdePercent}%`;
+                
+                const absChange = (baseline * mde).toFixed(2);
+                const newValue = (baseline * (1 + mde)).toFixed(2);
+                document.getElementById('mde-explanation').textContent = 
+                    `${baseline}%p → ${newValue}%p (절대 ${absChange}%p 개선)`;
+                
+                previewBox.style.display = 'block';
+            } else {
+                previewBox.style.display = 'none';
+            }
+        }
+
+        document.getElementById('prop-baseline').addEventListener('input', function() {
+            updateMdeExample();
+            updateMDEPreview();
+        });
+        document.getElementById('prop-allocation').addEventListener('change', updateMDEPreview);
+        document.getElementById('visit-frequency').addEventListener('change', function() {
+            updateUniqueUsersPreview();
+            updateMDEPreview();
+        });
+
+        // ============================================
+        // 목표와 MDE 비교
+        // ============================================
+        function updateMDEComparison() {
+            const targetMDE = parseFloat(document.getElementById('prop-mde').value);
+            const mdeValueText = document.getElementById('mde-value').textContent;
+            const comparisonBox = document.getElementById('mde-comparison');
+            
+            if (!targetMDE || !mdeValueText) {
+                comparisonBox.style.display = 'none';
+                return;
+            }
+            
+            const calculatedMDE = parseFloat(mdeValueText);
+            const dailyVisitors = parseFloat(document.getElementById('prop-daily-visitors').value);
+            const duration = parseInt(document.getElementById('prop-duration').value);
+            
+            comparisonBox.style.display = 'block';
+            
+            // Case 1: 목표 > MDE (여유 있음)
+            if (targetMDE > calculatedMDE * 1.5) {
+                comparisonBox.className = 'mde-comparison show success';
+                comparisonBox.innerHTML = `
+                    📊 이 실험에서 잡을 수 있는 최소 효과: ${calculatedMDE.toFixed(1)}%<br>
+                    <strong style="color: #059669;">목표(${targetMDE}%)는 충분히 검증 가능합니다 ✅</strong>
+                `;
+            }
+            // Case 2: 목표 ≈ MDE (빠듯함)
+            else if (targetMDE >= calculatedMDE && targetMDE <= calculatedMDE * 1.5) {
+                comparisonBox.className = 'mde-comparison show warning';
+                comparisonBox.innerHTML = `
+                    ⚠️ 최소 ${calculatedMDE.toFixed(1)}% 개선부터 통계적으로 확인 가능<br>
+                    목표(${targetMDE}%)는 간신히 검증 범위에 있습니다
+                `;
+            }
+            // Case 3: 목표 < MDE (불가능)
+            else {
+                comparisonBox.className = 'mde-comparison show error';
+                let suggestionsHTML = `
+                    ⚠️ 이 조건에선 최소 ${calculatedMDE.toFixed(1)}% 개선되어야 확인 가능<br>
+                    <strong style="color: #b91c1c;">목표(${targetMDE}%)는 이 실험으로 검증하기 어려워요</strong>
+                    <div style="margin-top: 12px; font-size: 13px;">
+                        💡 목표 달성 여부를 확인하려면?<br>
+                `;
+                
+                // 기간 제안
+                const visitFrequency = document.getElementById('visit-frequency').value;
+                const kValue = getKValue(visitFrequency);
+                const testDays = [14, 21, 30];
+                for (const days of testDays) {
+                    if (days <= duration) continue;
+                    
+                    const uniqueUsers = Math.round((dailyVisitors * days) / kValue);
+                    const alpha = parseFloat(document.getElementById('alpha-level').value);
+                    const power = parseFloat(document.getElementById('power-level').value);
+                    const allocation = document.getElementById('prop-allocation').value;
+                    const suggestedMDE = calculateMDE(uniqueUsers, parseFloat(document.getElementById('prop-baseline').value), allocation, alpha, power);
+                    
+                    if (suggestedMDE && suggestedMDE * 100 <= targetMDE) {
+                        const mdePercent = (suggestedMDE * 100).toFixed(1);
+                        suggestionsHTML += `• <button type="button" class="duration-btn" onclick="document.getElementById('prop-duration').value=${days}; updateUniqueUsersPreview(); updateMDEPreview(); updateMDEComparison();">${days}일로 재계산</button> → MDE ${mdePercent}% ✅<br>`;
+                    }
+                }
+                
+                suggestionsHTML += `</div>`;
+                comparisonBox.innerHTML = suggestionsHTML;
+            }
+        }
+
+        document.getElementById('prop-mde').addEventListener('input', function() {
+            updateMdeExample();
+            updateMDEComparison();
+        });
+
+        // ============================================
+        // 고급 설정 토글
+        // ============================================
+        document.getElementById('advanced-toggle').addEventListener('click', function() {
+            const content = document.getElementById('advanced-content');
+            content.classList.toggle('show');
+        });
+
+        // ============================================
+        // 초기화
+        // ============================================
+        updateMdeExample();
+    </script>
+</body>
+</html>
