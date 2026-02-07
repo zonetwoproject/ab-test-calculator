@@ -234,14 +234,3 @@ MIT License
 ## 👤 제작자
 
 built by zonetwo.project
----
-
-## 🔗 관련 문서
-
-- [배포 가이드](DEPLOY.md)
-- [커밋/푸시 가이드](GIT_GUIDE.md)
-- [변경 이력](CHANGELOG.md)
-- [v2 설계 의사결정](docs/v2-design-decisions.md)
-- [v2 계산 로직 상세](docs/v2-calculation-logic.md)
-
-문서는 이 README와 CHANGELOG로 통합되어 있으며, 버전별 별도 README는 사용하지 않습니다.
