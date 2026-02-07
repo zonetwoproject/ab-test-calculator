@@ -2,7 +2,7 @@
 
 전환율 개선을 위한 **샘플 수 · MDE · 슬롯 배분**을 한 번에 계산하는 웹 도구입니다. PM이 실험 설계 시 필요한 수치를 빠르게 확인할 수 있습니다.
 
-**→ [Live Demo](https://zonetwoproject.github.io/ab-test-calculator/)** (루트 접속 시 최신 버전 v6으로 이동)
+**→ [Live Demo](https://zonetwoproject.github.io/ab-test-calculator/)** (현재 버전 v6)
 
 ---
 
