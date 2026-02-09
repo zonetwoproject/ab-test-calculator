@@ -4,6 +4,8 @@
 
 **→ [Live Demo](https://zonetwoproject.github.io/ab-test-calculator/)** (현재 버전 v6)
 
+**버전**: [v1](https://zonetwoproject.github.io/ab-test-calculator/versions/v1/) · [v2](https://zonetwoproject.github.io/ab-test-calculator/versions/v2/) · [v3](https://zonetwoproject.github.io/ab-test-calculator/versions/v3/) · [v4](https://zonetwoproject.github.io/ab-test-calculator/versions/v4/) · [v5](https://zonetwoproject.github.io/ab-test-calculator/versions/v5/) · [**v6**](https://zonetwoproject.github.io/ab-test-calculator/versions/v6/) ← 최신(권장). **명칭**: v4→Mark3, v5→Mark4, v6→Mark5.
+
 ---
 
 ## 주요 기능
@@ -79,6 +81,15 @@ ab-test-calculator/
     ├── v5/ · v4/ · v3/ · v2/ · v1/
 ```
 
+## 🚀 로컬에서 실행
+
+HTML을 **더블클릭**으로 열면 동작하지 않을 수 있습니다. **로컬 서버**로 여세요.
+
+| 방법 | 어떻게 |
+|------|--------|
+| **더블클릭 (macOS)** | **`OPEN.command`** 더블클릭 → 서버 + 브라우저 자동 오픈 |
+| **터미널** | `npm run start` 후 **http://localhost:3000** 접속 |
+| **자동 오픈** | `npm run start:open` → 2초 뒤 브라우저 열림 |
 ---
 
 ## 권장 설정

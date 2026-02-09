@@ -659,35 +659,13 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- 추정 정보 -->
-                <div class="result-section">
-                    <h3>📈 고유 유저 추정</h3>
-                    <div class="estimation-info">
-                        <h4>🧮 계산 과정</h4>
-                        <div id="estimation-calculation"></div>
-                        <div class="estimation-details" id="estimation-details"></div>
-                    </div>
-                </div>
-
-                <!-- SQL 쿼리 -->
-                <div class="collapsible">
-                    <div class="collapsible-header" id="detail-toggle">
-                        📝 슬롯 추출 쿼리 보기
-                    </div>
-                    <div class="collapsible-content" id="detail-content">
-                        <div class="collapsible-body">
-                            <p style="margin-bottom: 8px;">아래 쿼리를 복사해서 사용하세요:</p>
-                            <div class="sql-code" id="sql-query"></div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
         <div class="footer">
+            <a href="../../index.html">← 처음으로</a> · 
             Built by <a href="mailto:zonetwo.project@gmail.com">zonetwo.project</a> | 
-            <a href="https://github.com/jabezpark/ab-test-calculator" target="_blank">GitHub</a>
+            <a href="https://github.com/zonetwoproject/ab-test-calculator" target="_blank">GitHub</a>
         </div>
     </div>
 
@@ -1049,35 +1027,6 @@
             document.getElementById('result-treatment-slots').textContent = 
                 `${formatNumber(result.slots.control + 1)}~${formatNumber(result.slots.total)}`;
             
-            // 추정 정보
-            const kData = CONFIG.K_VALUES[document.getElementById('visit-frequency').value];
-            document.getElementById('estimation-calculation').innerHTML = `
-                총 방문 수: ${formatNumber(result.estimation.dailyVisitors)} × ${result.estimation.duration}일 
-                = ${formatNumber(result.estimation.dailyVisitors * result.estimation.duration)}회<br>
-                추정 고유 유저: ${formatNumber(result.estimation.dailyVisitors * result.estimation.duration)}회 ÷ ${result.estimation.kValue} 
-                = <strong>${formatNumber(result.estimation.uniqueUsers)}명</strong>
-            `;
-            
-            document.getElementById('estimation-details').innerHTML = `
-                ${kData.emoji} <strong>${kData.label}</strong><br>
-                ${kData.message}
-            `;
-            
-            // SQL 쿼리
-            const dateRange = getDateRange(result.estimation.duration);
-            const sqlQuery = `SELECT
-    user_id,
-    CASE
-        WHEN MOD(ABS(FARM_FINGERPRINT(CAST(user_id AS STRING))), 10000) BETWEEN 0 AND ${result.slots.control - 1} THEN 'control'
-        WHEN MOD(ABS(FARM_FINGERPRINT(CAST(user_id AS STRING))), 10000) BETWEEN ${result.slots.control} AND ${result.slots.total - 1} THEN 'treatment'
-        ELSE 'excluded'
-    END AS test_group
-FROM \`your_project.your_dataset.your_table\`
-WHERE date BETWEEN '${dateRange.start}' AND '${dateRange.end}'
-GROUP BY user_id`;
-            
-            document.getElementById('sql-query').textContent = sqlQuery;
-            
             // 결과 영역 표시
             document.getElementById('results').classList.add('show');
             
@@ -1133,14 +1082,6 @@ GROUP BY user_id`;
                 console.error('계산 중 에러:', error);
                 alert('계산 중 오류가 발생했습니다: ' + error.message);
             }
-        });
-
-        // ============================================
-        // 상세 정보 토글
-        // ============================================
-        document.getElementById('detail-toggle').addEventListener('click', function() {
-            const content = document.getElementById('detail-content');
-            content.classList.toggle('show');
         });
 
         // ============================================

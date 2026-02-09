@@ -1,0 +1,15 @@
+{
+  "name": "ab-test-calculator",
+  "version": "2.0.0",
+  "description": "A/B 테스트 샘플 수 계산기",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npx --yes serve . -p 3000",
+    "start:open": "(sleep 2 && open http://localhost:3000) & npx --yes serve . -p 3000",
+    "notion:upload": "node scripts/notion-upload.mjs"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.15"
+  }
+}

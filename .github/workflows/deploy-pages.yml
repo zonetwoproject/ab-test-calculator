@@ -1,0 +1,50 @@
+# GitHub Pages 배포 (HTML이 GitHub에서 잘 열리게)
+# 설정: 저장소 Settings → Pages → Source: GitHub Actions
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 사이트 파일만 준비 (index.html + versions/)
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp .nojekyll _site/ 2>/dev/null || true
+          cp -r versions _site/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@3
+        with:
+          path: _site
+
+  deploy-pages:
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@4
