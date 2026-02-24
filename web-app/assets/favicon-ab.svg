@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="AB favicon">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#89efe2"/>
+      <stop offset="55%" stop-color="#38ddd2"/>
+      <stop offset="100%" stop-color="#19cfc1"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.58"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f7f76" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <rect x="10" y="10" width="236" height="236" rx="46" fill="url(#bg)"/>
+  <path d="M10 30c28 20 64 30 118 30s90-10 118-30v76c-23 19-61 29-118 29S33 125 10 106V30z" fill="url(#shine)"/>
+  <text
+    x="128"
+    y="154"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    font-size="96"
+    font-weight="800"
+    font-family="Pretendard, Inter, Arial, sans-serif"
+    fill="#ffffff"
+    filter="url(#shadow)"
+  >AB</text>
+</svg>

@@ -7,6 +7,19 @@
   "scripts": {
     "start": "npx --yes serve . -p 3000",
     "start:open": "(sleep 2 && open http://localhost:3000) & npx --yes serve . -p 3000",
+    "web:start": "npm run start",
+    "web:start:open": "npm run start:open",
+    "mobile:start": "npm --prefix mobile-app run start",
+    "mobile:ios": "npm --prefix mobile-app run ios",
+    "mobile:android": "npm --prefix mobile-app run android",
+    "mobile:lint": "npm --prefix mobile-app run lint",
+    "mobile:pods": "cd mobile-app/ios && pod install",
+    "mobile:install": "npm --prefix mobile-app install --legacy-peer-deps",
+    "webapp:install": "npm --prefix web-app install",
+    "webapp:dev": "npm --prefix web-app run dev",
+    "webapp:build": "npm --prefix web-app run build",
+    "webapp:preview": "npm --prefix web-app run preview",
+    "webapp:sim": "npm --prefix web-app run sim:open",
     "notion:upload": "node scripts/notion-upload.mjs"
   },
   "dependencies": {
