@@ -1277,6 +1277,7 @@
                             <input type="number" id="prop-daily-visitors" placeholder="예: 100000" min="1" step="1" required>
                             <span class="unit">명/일</span>
                         </div>
+                        <div class="help-text">실험 분배 단위 기준, 최근 1개월 기준 일평균 방문 수를 입력하세요<br>(예. 디바이스 기준 실험의 경우 device_id의 일평균 방문)</div>
                         <div class="info-text" id="visitors-feedback"></div>
                     </div>
 
@@ -1687,9 +1688,7 @@
             feedback.classList.remove('error', 'muted');
 
             if (!rawValue) {
-                feedback.classList.add('show');
-                feedback.classList.add('muted');
-                feedback.innerHTML = `실험 분배 단위 기준, 최근 1개월 기준 일평균 방문 수를 입력하세요<br>(예. 디바이스 기준 실험의 경우 device_id의 일평균 방문)`;
+                feedback.classList.remove('show');
                 return;
             }
 
