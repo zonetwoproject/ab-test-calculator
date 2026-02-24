@@ -128,6 +128,64 @@
             width: 100%;
         }
 
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .tab-switcher {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: var(--space-2);
+            padding: var(--space-2);
+            border: 1px solid #d5e1f2;
+            border-radius: 14px;
+            background: #f3f7ff;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+        }
+
+        .tab-switcher-btn {
+            border: 1px solid transparent;
+            border-radius: 10px;
+            height: calc(var(--control-h) - 6px);
+            background: transparent;
+            color: #5a6982;
+            font-size: var(--fs-btn);
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .tab-switcher-btn.active {
+            background: #ffffff;
+            color: var(--blue-2);
+            border-color: #bed2f7;
+            box-shadow: 0 1px 3px rgba(37, 97, 193, 0.12);
+        }
+
+        .workspace-grid {
+            display: block;
+            width: 100%;
+        }
+
+        .calculator-pane,
+        .guide-pane {
+            min-width: 0;
+        }
+
+        .guide-pane {
+            display: none;
+        }
+
+        .content[data-active-tab="guide"] .calculator-pane {
+            display: none;
+        }
+
+        .content[data-active-tab="guide"] .guide-pane {
+            display: block;
+        }
+
         #calculator-form {
             display: flex;
             flex-direction: column;
@@ -694,6 +752,137 @@
             font-size: var(--fs-help);
         }
 
+        .guide-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--line);
+            border-radius: clamp(16px, 4vw, 22px);
+            padding: clamp(14px, 4.4vw, 20px) clamp(12px, 4vw, 18px);
+            box-shadow: var(--card-shadow);
+        }
+
+        .guide-intro-card {
+            background: linear-gradient(150deg, #2f83ef 0%, #1c66d8 100%);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: var(--space-4);
+        }
+
+        .guide-intro-title {
+            font-size: calc(var(--fs-step) + 1px);
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: var(--space-2);
+        }
+
+        .guide-intro-text {
+            font-size: var(--fs-input);
+            line-height: 1.58;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .guide-section-title {
+            font-size: calc(var(--fs-step) + 1px);
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: var(--space-3);
+            margin-top: var(--space-4);
+        }
+
+        .guide-section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        .guide-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-3);
+            border: 1px solid #dce5f1;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 12px;
+            margin-bottom: var(--space-2);
+        }
+
+        .guide-item-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #edf3ff;
+            color: #285ac4;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+
+        .guide-item-title {
+            font-size: var(--fs-input);
+            color: #1f2937;
+            font-weight: 800;
+            margin-bottom: 2px;
+            line-height: 1.35;
+        }
+
+        .guide-item-desc {
+            font-size: var(--fs-help);
+            color: #5f6b7e;
+            line-height: 1.56;
+        }
+
+        .guide-formula-card {
+            border: 1px solid #dce5f1;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 12px;
+            margin-bottom: var(--space-2);
+        }
+
+        .guide-formula-title {
+            font-size: var(--fs-help);
+            font-weight: 800;
+            color: #2f6fde;
+            margin-bottom: var(--space-2);
+        }
+
+        .guide-formula-text {
+            font-size: calc(var(--fs-help) - 0.25px);
+            color: #55647b;
+            line-height: 1.62;
+            white-space: pre-line;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .guide-note-card {
+            border: 1px solid #dce5f1;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 12px;
+        }
+
+        .guide-note-list {
+            list-style: none;
+            display: grid;
+            gap: 4px;
+            color: #4b5b73;
+            font-size: var(--fs-help);
+            line-height: 1.55;
+        }
+
+        .guide-note-list li::before {
+            content: "• ";
+            color: #2f6fde;
+            font-weight: 700;
+        }
+
+        .guide-footer {
+            margin-top: var(--space-4);
+            text-align: center;
+            color: #7b879b;
+            font-size: calc(var(--fs-help) - 0.2px);
+            line-height: 1.45;
+        }
+
         .custom-k-wrap,
         .chip-wrap {
             margin-top: var(--space-3);
@@ -715,6 +904,8 @@
         .guide-box,
         .content,
         .content-inner,
+        .workspace-grid,
+        .guide-panel,
         .table,
         .action-row {
             max-width: 100%;
@@ -731,6 +922,11 @@
 
             .content {
                 padding: 0;
+            }
+
+            .tab-switcher {
+                gap: 4px;
+                padding: 4px;
             }
 
             .guide-box {
@@ -782,6 +978,11 @@
 
             .subsection-divider {
                 margin: 14px 0 8px;
+            }
+
+            .guide-panel {
+                border-radius: 18px;
+                padding: 16px 14px;
             }
         }
 
@@ -920,6 +1121,28 @@
                 max-width: 1200px;
             }
 
+            .tab-switcher {
+                display: none;
+            }
+
+            .workspace-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+                gap: var(--space-4);
+                align-items: start;
+            }
+
+            .guide-pane {
+                display: block;
+                position: sticky;
+                top: 14px;
+            }
+
+            .guide-panel {
+                max-height: calc(100vh - 28px);
+                overflow: auto;
+            }
+
             #calculator-form {
                 gap: var(--space-4);
             }
@@ -1017,9 +1240,16 @@
             </div>
         </div>
 
-        <div class="content">
+        <div class="content" data-active-tab="calculator">
             <div class="content-inner">
-            <form id="calculator-form">
+                <div class="workspace">
+                    <div class="tab-switcher" role="tablist" aria-label="서비스 탭">
+                        <button type="button" class="tab-switcher-btn active" data-tab="calculator" role="tab" aria-selected="true">계산기</button>
+                        <button type="button" class="tab-switcher-btn" data-tab="guide" role="tab" aria-selected="false">사용 가이드</button>
+                    </div>
+                    <div class="workspace-grid">
+                        <div class="calculator-pane">
+                            <form id="calculator-form">
                 <div class="guide-box">
                     <ol>
                         <li>동일 지면에서 여러 실험을 진행할 때 샘플이 겹치지 않도록 슬롯을 나눠 사용하세요.</li>
@@ -1157,7 +1387,7 @@
                 </div>
             </form>
 
-            <div class="results" id="results">
+                            <div class="results" id="results">
                 <div class="result-section result-hero">
                     <h3>🎰 필요한 슬롯</h3>
                     <div class="result-main" id="result-slot-range">-</div>
@@ -1195,7 +1425,13 @@
                         <span>결과 복사</span>
                     </button>
                 </div>
-            </div>
+                            </div>
+                        </div>
+                        <aside class="guide-pane" id="guide-pane">
+                            <div class="guide-panel" id="guide-panel-content"></div>
+                        </aside>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1224,10 +1460,183 @@
             PRESET_MDE
         };
 
+        const GUIDE_CONTENT = Object.freeze({
+            introTitle: '실험 계산기란?',
+            introText: '동일 지면에서 여러 실험을 진행할 때 샘플이 겹치지 않도록 슬롯을 나눠 사용하세요. 실험 기간, 방문 수, 트래픽 사용률을 입력하면 권장 슬롯 수를 자동으로 계산합니다.',
+            inputItems: [
+                {
+                    icon: '🧪',
+                    title: '실험 기간은 며칠인가요?',
+                    description: '실험 기간은 1일 이상 입력하세요. 요일 효과를 반영하려면 최소 7일, 안정적인 결과를 위해 14일 이상을 권장합니다.'
+                },
+                {
+                    icon: '📊',
+                    title: '하루에 몇 명이 방문하나요?',
+                    description: '실험 분배 단위 기준, 최근 1개월 기준 일평균 방문 수를 입력하세요. 고유 유저 계산은 K=1 고정으로 처리됩니다.'
+                },
+                {
+                    icon: '🧱',
+                    title: '전체 트래픽 중 실험 사용 비율',
+                    description: '예: 70 입력 시 추정 고유 유저의 70%만 실험에 사용합니다.'
+                },
+                {
+                    icon: '🎯',
+                    title: '배분 비율을 선택하세요',
+                    description: '첫 번째 값은 대조군입니다. 쉼표로 구분하고 합계가 100이 되도록 입력하세요.'
+                },
+                {
+                    icon: 'ℹ️',
+                    title: '이 지표를 얼마나 개선하고 싶으신가요?',
+                    description: '상대 개선율(%) 또는 절대 개선폭(%p)으로 목표를 입력하세요.'
+                }
+            ],
+            formulas: [
+                {
+                    title: '고유 유저 수',
+                    text: 'totalUniqueUsers = round( dailyVisitors × duration / 1 )\navailableUsers = round( totalUniqueUsers × trafficUsagePct / 100 )'
+                },
+                {
+                    title: '필요 샘플 수 (다중 그룹)',
+                    text: 'p2 = p1 × (1 + relativeEffect)\nκᵢ = treatmentRatioᵢ / controlRatio\nnControlᵢ = (zα + zβ)² × [ p1(1-p1) + p2(1-p2)/κᵢ ] / (p2 - p1)²\ntotalForPairᵢ = nControlᵢ / controlRatio\nrequiredTotal = ceil( max(totalForPairᵢ) )'
+                },
+                {
+                    title: '슬롯 계산',
+                    text: 'usersPerSlot = availableUsers / 10,000\nrequiredSlots = ceil( requiredTotal / usersPerSlot )\nslotUsagePct = requiredSlots / 10,000 × 100'
+                },
+                {
+                    title: 'MDE 역산',
+                    text: '이진 탐색으로 requiredTotal ≤ availableUsers를\n만족하는 최소 상대 효과를 산출합니다.\n탐색 범위: 0.0001 ~ min(3, (1-p1)/p1 × 0.999)\n반복: 최대 60회'
+                }
+            ],
+            mark8Notes: [
+                'K값: 1 고정',
+                '그룹 비중: 합계 100 필수',
+                '개선 목표: 상대(%) / 절대(%p) 선택',
+                'MDE 비교: 목표 가능 여부 + 기간(14/21/30일) 제안'
+            ],
+            footerTitle: 'A/B 테스트 계산기 Mark8',
+            footerSub: 'v8 · 2026'
+        });
+
         let latestResultSummary = '';
 
         function getKValueOrThrow() {
             return FIXED_K_META;
+        }
+
+        function renderGuidePanel() {
+            const panel = document.getElementById('guide-panel-content');
+            if (!panel) {
+                return;
+            }
+
+            const itemHtml = GUIDE_CONTENT.inputItems
+                .map(({ icon, title, description }) => `
+                    <div class="guide-item">
+                        <span class="guide-item-icon" aria-hidden="true">${icon}</span>
+                        <div class="guide-item-copy">
+                            <div class="guide-item-title">${title}</div>
+                            <div class="guide-item-desc">${description}</div>
+                        </div>
+                    </div>
+                `)
+                .join('');
+
+            const formulaHtml = GUIDE_CONTENT.formulas
+                .map(({ title, text }) => `
+                    <div class="guide-formula-card">
+                        <div class="guide-formula-title">${title}</div>
+                        <div class="guide-formula-text">${text}</div>
+                    </div>
+                `)
+                .join('');
+
+            const noteHtml = GUIDE_CONTENT.mark8Notes
+                .map((note) => `<li>${note}</li>`)
+                .join('');
+
+            panel.innerHTML = `
+                <div class="guide-intro-card">
+                    <div class="guide-intro-title">${GUIDE_CONTENT.introTitle}</div>
+                    <div class="guide-intro-text">${GUIDE_CONTENT.introText}</div>
+                </div>
+
+                <div class="guide-section-title">입력 항목 안내</div>
+                ${itemHtml}
+
+                <div class="guide-section-title">계산 공식</div>
+                ${formulaHtml}
+
+                <div class="guide-section-title">Mark8 기준 안내</div>
+                <div class="guide-note-card">
+                    <ul class="guide-note-list">${noteHtml}</ul>
+                </div>
+
+                <div class="guide-footer">
+                    <div>${GUIDE_CONTENT.footerTitle}</div>
+                    <div>${GUIDE_CONTENT.footerSub}</div>
+                </div>
+            `;
+        }
+
+        function setupResponsiveTabs() {
+            const content = document.querySelector('.content');
+            const buttons = Array.from(document.querySelectorAll('.tab-switcher-btn'));
+            const desktopQuery = window.matchMedia('(min-width: 1200px)');
+
+            if (!content || !buttons.length) {
+                return;
+            }
+
+            const getInitialTab = () => {
+                const queryTab = new URLSearchParams(window.location.search).get('tab');
+                return queryTab === 'guide' ? 'guide' : 'calculator';
+            };
+
+            let currentTab = getInitialTab();
+
+            const applyTabState = (tab, { syncUrl = true } = {}) => {
+                currentTab = tab === 'guide' ? 'guide' : 'calculator';
+                const activeTab = desktopQuery.matches ? 'desktop' : currentTab;
+                content.setAttribute('data-active-tab', activeTab);
+
+                buttons.forEach((button) => {
+                    const selected = button.dataset.tab === currentTab;
+                    button.classList.toggle('active', selected);
+                    button.setAttribute('aria-selected', String(selected));
+                    button.tabIndex = selected ? 0 : -1;
+                });
+
+                if (syncUrl) {
+                    const nextUrl = new URL(window.location.href);
+                    if (currentTab === 'guide') {
+                        nextUrl.searchParams.set('tab', 'guide');
+                    } else {
+                        nextUrl.searchParams.delete('tab');
+                    }
+                    window.history.replaceState({}, '', nextUrl);
+                }
+            };
+
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => applyTabState(button.dataset.tab));
+            });
+
+            const onBreakpointChange = () => {
+                applyTabState(currentTab, { syncUrl: false });
+            };
+
+            if (desktopQuery.addEventListener) {
+                desktopQuery.addEventListener('change', onBreakpointChange);
+            } else {
+                desktopQuery.addListener(onBreakpointChange);
+            }
+
+            window.addEventListener('popstate', () => {
+                applyTabState(getInitialTab(), { syncUrl: false });
+            });
+
+            applyTabState(currentTab, { syncUrl: false });
         }
 
         function getFormData() {
@@ -1766,11 +2175,15 @@
             }
         });
 
+        renderGuidePanel();
+        setupResponsiveTabs();
         updateDurationFeedback();
         updateVisitorsFeedback();
         updateMdeModeUI();
         applyEvenRatios();
         updateUniqueUsersPreview();
+        updateMdePreview();
+        updateMdeComparison();
     </script>
 </body>
 </html>
