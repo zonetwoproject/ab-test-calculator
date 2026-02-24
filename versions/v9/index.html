@@ -1080,9 +1080,6 @@
                         <label class="step-label" for="group-ratios">배분 비율을 선택하세요</label>
                         <input type="text" id="group-ratios" value="50,50" placeholder="예: 50,30,20">
                         <div class="help-text">첫 번째 값은 대조군입니다. 쉼표로 구분하세요.</div>
-                        <div class="chip-wrap">
-                            <button type="button" class="chip-btn" id="apply-even-ratio">균등 비중 자동입력</button>
-                        </div>
                         <div class="info-text" id="ratio-feedback"></div>
                     </div>
                 </div>
@@ -1692,8 +1689,6 @@
             updateMdePreview();
             updateMdeComparison();
         });
-
-        document.getElementById('apply-even-ratio').addEventListener('click', applyEvenRatios);
 
         document.getElementById('prop-baseline').addEventListener('input', () => {
             updateMdePreview();
