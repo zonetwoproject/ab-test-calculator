@@ -1513,13 +1513,6 @@
                     text: '이진 탐색으로 requiredTotal ≤ availableUsers를\n만족하는 최소 상대 효과를 산출합니다.\n탐색 범위: 0.0001 ~ min(3, (1-p1)/p1 × 0.999)\n반복: 최대 60회'
                 }
             ],
-            mark9Notes: [
-                'K값: 1 고정',
-                '그룹 비중: 합계 100 필수',
-                '현재 지표: 최근 일평균 기준값 입력 (CTR/CVR 등)',
-                '개선 목표: 상대(%) / 절대(%p) 선택',
-                'MDE 비교: 목표 가능 여부 + 기간(14/21/30일) 제안'
-            ],
             footerTitle: 'A/B 테스트 계산기 Mark9',
             footerSub: 'v9 · 2026'
         });
@@ -1557,10 +1550,6 @@
                 `)
                 .join('');
 
-            const noteHtml = GUIDE_CONTENT.mark9Notes
-                .map((note) => `<li>${note}</li>`)
-                .join('');
-
             panel.innerHTML = `
                 <div class="guide-intro-card">
                     <div class="guide-intro-title">${GUIDE_CONTENT.introTitle}</div>
@@ -1572,11 +1561,6 @@
 
                 <div class="guide-section-title">계산 공식</div>
                 ${formulaHtml}
-
-                <div class="guide-section-title">Mark9 기준 안내</div>
-                <div class="guide-note-card">
-                    <ul class="guide-note-list">${noteHtml}</ul>
-                </div>
 
                 <div class="guide-footer">
                     <div>${GUIDE_CONTENT.footerTitle}</div>

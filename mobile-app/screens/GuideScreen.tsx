@@ -129,17 +129,6 @@ export default function GuideScreen() {
           </Text>
         </FormulaCard>
 
-        <Text style={styles.sectionTitle}>Mark9 기준 안내</Text>
-        <View style={styles.formulaCard}>
-          <Text style={styles.formulaText}>
-            - K값: 1 고정{'\n'}
-            - 그룹 비중: 합계 100 필수{'\n'}
-            - 현재 지표: 최근 일평균 기준값 입력 (CTR/CVR 등){'\n'}
-            - 개선 목표: 상대(%) / 절대(%p) 선택{'\n'}
-            - MDE 비교: 목표 가능 여부 + 기간(14/21/30일) 제안
-          </Text>
-        </View>
-
         <View style={styles.footer}>
           <Text style={styles.footerText}>A/B 테스트 계산기 Mark9</Text>
           <Text style={styles.footerSub}>v9 · 2026</Text>
