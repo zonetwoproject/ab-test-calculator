@@ -1235,7 +1235,7 @@
                 <span class="drag-icon">⋮⋮</span>
                 <div class="title-line">
                     <h1>실험 계산기</h1>
-                    <span class="version-badge">Mark8</span>
+                    <span class="version-badge">Mark9</span>
                 </div>
             </div>
         </div>
@@ -1471,14 +1471,14 @@
                     description: '실험 기간은 1일 이상 입력하세요. 요일 효과를 반영하려면 최소 7일, 안정적인 결과를 위해 14일 이상을 권장합니다.'
                 },
                 {
-                    icon: '📊',
-                    title: '하루에 몇 명이 방문하나요?',
-                    description: '실험 분배 단위 기준, 최근 1개월 기준 일평균 방문 수를 입력하세요. 고유 유저 계산은 K=1 고정으로 처리됩니다.'
-                },
-                {
                     icon: '🧱',
                     title: '전체 트래픽 중 실험 사용 비율',
                     description: '예: 70 입력 시 추정 고유 유저의 70%만 실험에 사용합니다.'
+                },
+                {
+                    icon: '📊',
+                    title: '목표 지표의 현재 수준은 어떤가요?',
+                    description: '목표 지표의 최근 일평균 값을 입력하세요. (CTR, CVR 등) 이 값이 MDE 프리뷰 계산의 기준이 됩니다.'
                 },
                 {
                     icon: '🎯',
@@ -1494,7 +1494,11 @@
             formulas: [
                 {
                     title: '고유 유저 수',
-                    text: 'totalUniqueUsers = round( dailyVisitors × duration / 1 )\navailableUsers = round( totalUniqueUsers × trafficUsagePct / 100 )'
+                    text: 'totalUniqueUsers = round( dailyVisitors × duration )\navailableUsers = round( totalUniqueUsers × trafficUsagePct / 100 )'
+                },
+                {
+                    title: '개선 목표 변환',
+                    text: 'relativeEffect = (relative mode) ? mdeInput/100 : mdeInput/baselinePct\np2 = p1 × (1 + relativeEffect)\nabsoluteEffect(%p) = p1 × relativeEffect × 100'
                 },
                 {
                     title: '필요 샘플 수 (다중 그룹)',
@@ -1509,14 +1513,15 @@
                     text: '이진 탐색으로 requiredTotal ≤ availableUsers를\n만족하는 최소 상대 효과를 산출합니다.\n탐색 범위: 0.0001 ~ min(3, (1-p1)/p1 × 0.999)\n반복: 최대 60회'
                 }
             ],
-            mark8Notes: [
+            mark9Notes: [
                 'K값: 1 고정',
                 '그룹 비중: 합계 100 필수',
+                '현재 지표: 최근 일평균 기준값 입력 (CTR/CVR 등)',
                 '개선 목표: 상대(%) / 절대(%p) 선택',
                 'MDE 비교: 목표 가능 여부 + 기간(14/21/30일) 제안'
             ],
-            footerTitle: 'A/B 테스트 계산기 Mark8',
-            footerSub: 'v8 · 2026'
+            footerTitle: 'A/B 테스트 계산기 Mark9',
+            footerSub: 'v9 · 2026'
         });
 
         let latestResultSummary = '';
@@ -1552,7 +1557,7 @@
                 `)
                 .join('');
 
-            const noteHtml = GUIDE_CONTENT.mark8Notes
+            const noteHtml = GUIDE_CONTENT.mark9Notes
                 .map((note) => `<li>${note}</li>`)
                 .join('');
 
@@ -1568,7 +1573,7 @@
                 <div class="guide-section-title">계산 공식</div>
                 ${formulaHtml}
 
-                <div class="guide-section-title">Mark8 기준 안내</div>
+                <div class="guide-section-title">Mark9 기준 안내</div>
                 <div class="guide-note-card">
                     <ul class="guide-note-list">${noteHtml}</ul>
                 </div>
