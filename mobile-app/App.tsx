@@ -53,7 +53,7 @@ export default function App() {
             name="WebApp"
             component={WebAppScreen}
             options={{
-              title: '웹앱',
+              title: '계산기',
               headerTitle: () => <HeaderTitle />,
               headerTitleAlign: 'center',
               tabBarIcon: ({ color, size }) => <Globe size={size} color={color} />,
