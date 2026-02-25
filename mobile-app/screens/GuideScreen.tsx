@@ -70,14 +70,14 @@ export default function GuideScreen() {
           description="예: 70 입력 시 추정 고유 유저의 70%만 실험에 사용합니다."
         />
         <GuideItem
-          icon={<BarChart3 size={18} color={Colors.accent} />}
-          title="목표 지표의 현재 수준은 어떤가요?"
-          description="목표 지표의 최근 일평균 값을 입력하세요. (CTR, CVR 등) 이 값이 MDE 프리뷰 계산의 기준이 됩니다."
-        />
-        <GuideItem
           icon={<Target size={18} color={Colors.error} />}
           title="배분 비율을 선택하세요"
           description="첫 번째 값은 대조군입니다. 쉼표로 구분하고 합계가 100이 되도록 입력하세요."
+        />
+        <GuideItem
+          icon={<BarChart3 size={18} color={Colors.accent} />}
+          title="목표 지표의 현재 수준은 어떤가요?"
+          description="목표 지표의 최근 일평균 값을 입력하세요. (CTR, CVR 등) 이 값이 MDE 프리뷰 계산의 기준이 됩니다."
         />
         <GuideItem
           icon={<Info size={18} color={Colors.info} />}
