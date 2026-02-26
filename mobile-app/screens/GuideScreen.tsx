@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useCallback, useImperativeHandle, useRef } from 'react';
 import { View, Text, ScrollView, StyleSheet, Platform } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import {
   BookOpen,
   FlaskConical,
@@ -55,7 +57,38 @@ function FormulaCard({ title, description, equation, code }: FormulaCardProps) {
   );
 }
 
-export default function GuideScreen() {
+export type GuideScreenHandle = {
+  scrollToTop: () => void;
+};
+
+const GuideScreen = React.forwardRef<GuideScreenHandle>(function GuideScreen(_, ref) {
+  const scrollRef = useRef<ScrollView>(null);
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const scrollToTop = useCallback(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  }, []);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      scrollToTop,
+    }),
+    [scrollToTop]
+  );
+
+  React.useEffect(() => {
+    const parent = navigation.getParent();
+    if (!parent) {
+      return;
+    }
+
+    return parent.addListener('tabPress', () => {
+      if (navigation.isFocused()) {
+        scrollToTop();
+      }
+    });
+  }, [navigation, scrollToTop]);
+
   const formulaCards: FormulaCardProps[] = [
     {
       title: '고유 유저 수',
@@ -91,6 +124,7 @@ export default function GuideScreen() {
 
   return (
     <ScrollView
+      ref={scrollRef}
       style={styles.scroll}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
@@ -149,7 +183,9 @@ export default function GuideScreen() {
         </View>
     </ScrollView>
   );
-}
+});
+
+export default GuideScreen;
 
 const styles = StyleSheet.create({
   headerLeft: {

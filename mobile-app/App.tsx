@@ -6,8 +6,8 @@ import { BookOpen, Globe } from 'lucide-react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import Colors from '@/constants/color';
-import GuideScreen from '@/screens/GuideScreen';
-import WebAppScreen from '@/screens/WebAppScreen';
+import GuideScreen, { type GuideScreenHandle } from '@/screens/GuideScreen';
+import WebAppScreen, { type WebAppScreenHandle } from '@/screens/WebAppScreen';
 
 type RootTabParamList = {
   WebApp: undefined;
@@ -28,6 +28,9 @@ function HeaderTitle() {
 }
 
 export default function App() {
+  const webAppRef = React.useRef<WebAppScreenHandle>(null);
+  const guideRef = React.useRef<GuideScreenHandle>(null);
+
   return (
     <GestureHandlerRootView style={styles.root}>
       <NavigationContainer>
@@ -51,22 +54,35 @@ export default function App() {
         >
           <Tab.Screen
             name="WebApp"
-            component={WebAppScreen}
+            listeners={() => ({
+              tabPress: () => {
+                webAppRef.current?.scrollToTop();
+              },
+            })}
             options={{
               title: '계산기',
+              tabBarLabel: '계산기',
               headerTitle: () => <HeaderTitle />,
               headerTitleAlign: 'center',
               tabBarIcon: ({ color, size }) => <Globe size={size} color={color} />,
             }}
-          />
+          >
+            {() => <WebAppScreen ref={webAppRef} />}
+          </Tab.Screen>
           <Tab.Screen
             name="Guide"
-            component={GuideScreen}
+            listeners={() => ({
+              tabPress: () => {
+                guideRef.current?.scrollToTop();
+              },
+            })}
             options={{
               title: '사용 가이드',
               tabBarIcon: ({ color, size }) => <BookOpen size={size} color={color} />,
             }}
-          />
+          >
+            {() => <GuideScreen ref={guideRef} />}
+          </Tab.Screen>
         </Tab.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>
