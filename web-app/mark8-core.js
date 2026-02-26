@@ -270,7 +270,7 @@ export function validateFormData(formData, ratioMeta) {
   }
 }
 
-export function calculateExperiment(formData, ratioMeta, kMeta = FIXED_K_META) {
+export function calculateExperiment(formData, ratioMeta) {
   const controlRatio = ratioMeta.ratios[0];
   const treatmentRatios = ratioMeta.ratios.slice(1);
   const p1 = formData.baselinePct / 100;
@@ -281,7 +281,7 @@ export function calculateExperiment(formData, ratioMeta, kMeta = FIXED_K_META) {
 
   const { zAlpha, zBeta } = getZScores(formData.confidencePct, formData.powerPct);
 
-  const totalUniqueUsers = Math.round((formData.dailyVisitors * formData.duration) / kMeta.k);
+  const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
   const availableUsers = Math.round(totalUniqueUsers * (formData.trafficUsagePct / 100));
 
   const requiredTotalRaw = calculateRequiredTotalUsers(p1, relativeEffect, controlRatio, treatmentRatios, zAlpha, zBeta);

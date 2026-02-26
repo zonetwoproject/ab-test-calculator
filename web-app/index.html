@@ -1212,7 +1212,6 @@
         import {
             TOTAL_SLOTS,
             PRESET_MDE,
-            FIXED_K_META,
             formatNumber,
             getDefaultRatios,
             parseGroupRatios,
@@ -1228,10 +1227,6 @@
         };
 
         let latestResultSummary = '';
-
-        function getKValueOrThrow() {
-            return FIXED_K_META;
-        }
 
         function getFormData() {
             return {
@@ -1314,8 +1309,7 @@
             }
 
             try {
-                const kMeta = getKValueOrThrow();
-                const totalUniqueUsers = Math.round((formData.dailyVisitors * formData.duration) / kMeta.k);
+                const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
                 const availableUsers = Math.round(totalUniqueUsers * (formData.trafficUsagePct / 100));
 
                 previewBox.style.display = 'block';
@@ -1323,7 +1317,7 @@
                     <strong>💡 예상 고유 유저: 약 ${formatNumber(totalUniqueUsers)}명</strong><br>
                     실험 사용 비율 ${formData.trafficUsagePct}% 적용 시: <strong>${formatNumber(availableUsers)}명</strong><br>
                     <span class="preview-meta">
-                        계산: (${formatNumber(formData.dailyVisitors)} × ${formData.duration}일) ÷ ${kMeta.k.toFixed(2)} × ${formData.trafficUsagePct}% (K=1 고정)
+                        계산: (${formatNumber(formData.dailyVisitors)} × ${formData.duration}일) × ${formData.trafficUsagePct}%
                     </span>
                 `;
             } catch {
@@ -1396,16 +1390,14 @@
         function getPreviewContext() {
             const formData = getFormData();
             const ratioMeta = parseGroupRatios(formData.groupRatiosText, formData.groupCount);
-            const kMeta = getKValueOrThrow();
             validateBaseFormData(formData, ratioMeta);
 
-            const totalUniqueUsers = Math.round((formData.dailyVisitors * formData.duration) / kMeta.k);
+            const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
             const availableUsers = Math.round(totalUniqueUsers * (formData.trafficUsagePct / 100));
 
             return {
                 formData,
                 ratioMeta,
-                kMeta,
                 totalUniqueUsers,
                 availableUsers
             };
@@ -1440,8 +1432,7 @@
                     return;
                 }
 
-                const kMeta = getKValueOrThrow();
-                const totalUniqueUsers = Math.round((formData.dailyVisitors * formData.duration) / kMeta.k);
+                const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
                 const availableUsers = Math.round(totalUniqueUsers * (formData.trafficUsagePct / 100));
 
                 const detectable = calculateDetectableMde(
@@ -1480,8 +1471,7 @@
                 }
                 validateFormData(formData, ratioMeta);
 
-                const kMeta = getKValueOrThrow();
-                const totalUniqueUsers = Math.round((formData.dailyVisitors * formData.duration) / kMeta.k);
+                const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
                 const availableUsers = Math.round(totalUniqueUsers * (formData.trafficUsagePct / 100));
                 const detectable = calculateDetectableMde(
                     availableUsers,
@@ -1530,7 +1520,7 @@
                     if (days <= formData.duration) {
                         continue;
                     }
-                    const futureTotal = Math.round((formData.dailyVisitors * days) / kMeta.k);
+                    const futureTotal = Math.round(formData.dailyVisitors * days);
                     const futureAvailable = Math.round(futureTotal * (formData.trafficUsagePct / 100));
                     const futureDetectable = calculateDetectableMde(
                         futureAvailable,
@@ -1732,11 +1722,10 @@
             try {
                 const formData = getFormData();
                 const ratioMeta = parseGroupRatios(formData.groupRatiosText, formData.groupCount);
-                const kMeta = getKValueOrThrow();
 
                 validateFormData(formData, ratioMeta);
 
-                const result = calculateExperiment(formData, ratioMeta, kMeta);
+                const result = calculateExperiment(formData, ratioMeta);
                 displayResults(result, ratioMeta, formData);
             } catch (error) {
                 alert(error.message);

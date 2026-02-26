@@ -30,19 +30,65 @@ function GuideItem({ icon, title, description }: GuideItemProps) {
 
 interface FormulaCardProps {
   title: string;
-  children: React.ReactNode;
+  description: string;
+  equation: string;
+  code: string;
 }
 
-function FormulaCard({ title, children }: FormulaCardProps) {
+function FormulaCard({ title, description, equation, code }: FormulaCardProps) {
   return (
     <View style={styles.formulaCard}>
       <Text style={styles.formulaTitle}>{title}</Text>
-      {children}
+      <View style={styles.formulaSection}>
+        <Text style={styles.formulaDesc}>{description}</Text>
+      </View>
+      <View style={styles.formulaSection}>
+        <Text style={styles.formulaEquation}>{equation}</Text>
+      </View>
+      <View style={styles.formulaSection}>
+        <Text style={styles.formulaLabel}>공식(코드)</Text>
+        <View style={styles.formulaCodeBox}>
+          <Text style={styles.formulaCode}>{code}</Text>
+        </View>
+      </View>
     </View>
   );
 }
 
 export default function GuideScreen() {
+  const formulaCards: FormulaCardProps[] = [
+    {
+      title: '고유 유저 수',
+      description: '일평균 방문자 수와 실험 기간을 곱해 예상 고유 유저를 계산하고,\n실험 사용 비율을 반영해 실제 사용 가능 유저를 계산합니다.',
+      equation: '예상 고유 유저 수 = 반올림(일평균 방문자 수 × 실험 기간)\n실험 사용 가능 유저 수 = 반올림(예상 고유 유저 수 × 실험 사용 비율 / 100)',
+      code: 'totalUniqueUsers = round(dailyVisitors * duration)\navailableUsers = round(totalUniqueUsers * trafficUsagePct / 100)',
+    },
+    {
+      title: '개선 목표 변환',
+      description: '입력 방식(상대/절대)에 따라 계산용 개선율을 통일합니다.',
+      equation: '상대 개선율 입력 시\n개선율 = 입력값 / 100\n실험군 예상 지표 = 현재 지표 × (1 + 개선율)\n\n절대 개선폭(%p) 입력 시\n실험군 예상 지표 = 현재 지표 + 입력값(%p)\n내부 계산용 개선율 = 입력값 / 현재 지표(%)',
+      code: 'relativeEffect = (relative mode) ? (mdeInput / 100) : (mdeInput / baselinePct)\np2 = p1 * (1 + relativeEffect)\nabsoluteEffectPctPoint = p1 * relativeEffect * 100',
+    },
+    {
+      title: '필요 샘플 수 (다중 그룹)',
+      description: '각 실험군이 대조군과 비교될 때 필요한 샘플을 계산하고,\n그중 가장 큰 값을 전체 필요 샘플로 사용합니다.',
+      equation: '실험군 i의 배분비(κi) = 실험군 i 비중 / 대조군 비중\n대조군 필요 샘플(ni) = (zα + zβ)^2 × [ p1(1-p1) + p2(1-p2)/κi ] / (p2-p1)^2\n해당 조합 총 필요 샘플 = ni / 대조군 비중\n최종 총 필요 샘플 수 = 올림(각 조합 총 필요 샘플 중 최대값)',
+      code: 'kappa_i = treatmentRatio_i / controlRatio\nnControl_i = ((zAlpha + zBeta)^2 * (p1*(1-p1) + p2*(1-p2)/kappa_i)) / (p2 - p1)^2\ntotalForPair_i = nControl_i / controlRatio\nrequiredTotal = ceil(max(totalForPair_i))',
+    },
+    {
+      title: '슬롯 계산',
+      description: '사용 가능 유저를 10,000개 슬롯 기준으로 환산해\n필요한 슬롯 수를 계산합니다.',
+      equation: '슬롯당 유저 수 = 실험 사용 가능 유저 수 / 10,000\n필요 슬롯 수 = 올림(총 필요 샘플 수 / 슬롯당 유저 수)\n슬롯 사용률(%) = 필요 슬롯 수 / 10,000 × 100',
+      code: 'usersPerSlot = availableUsers / 10000\nrequiredSlots = ceil(requiredTotal / usersPerSlot)\nslotUsagePct = (requiredSlots / 10000) * 100',
+    },
+    {
+      title: 'MDE 역산',
+      description: '현재 조건에서 검증 가능한 최소 개선율을 찾기 위해,\n개선율을 가정하고 샘플 수를 비교하면서 범위를 반복적으로 줄입니다.',
+      equation: '1) 개선율 r 가정 → p2 계산\n2) 해당 r의 필요 샘플 계산\n3) 필요 샘플 > 사용 가능 유저면 r 증가\n4) 필요 샘플 ≤ 사용 가능 유저면 r 감소\n5) 이 과정을 반복해 최소 r 확정 (최대 60회)\n\n최종 MDE(상대 %) = r * 100\n최종 MDE(절대 %p) = p1 * r * 100',
+      code: 'low = 0.0001\nhigh = min(3, ((1 - p1) / p1) * 0.999)\nfor up to 60 iterations:\n  mid = (low + high) / 2\n  required = requiredUsers(mid)\n  if required <= availableUsers: high = mid\n  else: low = mid',
+    },
+  ];
+
   return (
     <ScrollView
       style={styles.scroll}
@@ -87,47 +133,15 @@ export default function GuideScreen() {
 
         <Text style={styles.sectionTitle}>계산 공식</Text>
 
-        <FormulaCard title="고유 유저 수">
-          <Text style={styles.formulaText}>
-            totalUniqueUsers = round( dailyVisitors × duration ){'\n'}
-            availableUsers = round( totalUniqueUsers × trafficUsagePct / 100 )
-          </Text>
-        </FormulaCard>
-
-        <FormulaCard title="개선 목표 변환">
-          <Text style={styles.formulaText}>
-            relativeEffect = (relative mode) ? mdeInput/100 : mdeInput/baselinePct{'\n'}
-            p2 = p1 × (1 + relativeEffect){'\n'}
-            absoluteEffect(%p) = p1 × relativeEffect × 100
-          </Text>
-        </FormulaCard>
-
-        <FormulaCard title="필요 샘플 수 (다중 그룹)">
-          <Text style={styles.formulaText}>
-            p2 = p1 × (1 + relativeEffect){'\n'}
-            κᵢ = treatmentRatioᵢ / controlRatio{'\n'}
-            nControlᵢ = (zα + zβ)² × [ p1(1-p1) + p2(1-p2)/κᵢ ] / (p2 - p1)²{'\n'}
-            totalForPairᵢ = nControlᵢ / controlRatio{'\n'}
-            requiredTotal = ceil( max(totalForPairᵢ) )
-          </Text>
-        </FormulaCard>
-
-        <FormulaCard title="슬롯 계산">
-          <Text style={styles.formulaText}>
-            usersPerSlot = availableUsers / 10,000{'\n'}
-            requiredSlots = ceil( requiredTotal / usersPerSlot ){'\n'}
-            slotUsagePct = requiredSlots / 10,000 × 100
-          </Text>
-        </FormulaCard>
-
-        <FormulaCard title="MDE 역산">
-          <Text style={styles.formulaText}>
-            이진 탐색으로 requiredTotal ≤ availableUsers를{'\n'}
-            만족하는 최소 상대 효과를 산출합니다.{'\n'}
-            탐색 범위: 0.0001 ~ min(3, (1-p1)/p1 × 0.999){'\n'}
-            반복: 최대 60회
-          </Text>
-        </FormulaCard>
+        {formulaCards.map((formula) => (
+          <FormulaCard
+            key={formula.title}
+            title={formula.title}
+            description={formula.description}
+            equation={formula.equation}
+            code={formula.code}
+          />
+        ))}
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>A/B 테스트 계산기 Mark9</Text>
@@ -236,9 +250,36 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     marginBottom: 8,
   },
-  formulaText: {
+  formulaSection: {
+    marginTop: 10,
+  },
+  formulaLabel: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#4b5b73',
+    marginBottom: 6,
+  },
+  formulaDesc: {
     fontSize: 12,
     color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+  formulaEquation: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+  formulaCodeBox: {
+    backgroundColor: '#f6f8fc',
+    borderWidth: 1,
+    borderColor: '#e3e8f2',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  formulaCode: {
+    fontSize: 12,
+    color: '#37465d',
     lineHeight: 20,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
