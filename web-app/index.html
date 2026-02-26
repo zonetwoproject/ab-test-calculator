@@ -396,6 +396,16 @@
             background: #edf4ff;
         }
 
+        .ratio-feedback-row {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .ratio-feedback-row .chip-btn {
+            align-self: flex-start;
+        }
+
         .comparison-box {
             display: none;
             margin-top: 0;
@@ -1083,7 +1093,10 @@
                         <div class="chip-wrap">
                             <button type="button" class="chip-btn" id="apply-even-ratio">균등 비중 자동입력</button>
                         </div>
-                        <div class="info-text" id="ratio-feedback"></div>
+                        <div class="ratio-feedback-row">
+                            <div class="info-text" id="ratio-feedback"></div>
+                            <button type="button" class="chip-btn is-hidden" id="apply-even-ratio-from-input">입력 그룹수 기준 자동 분배</button>
+                        </div>
                     </div>
                 </div>
 
@@ -1328,6 +1341,7 @@
         function updateRatioFeedback() {
             const groupCount = parseInt(document.getElementById('group-count').value, 10);
             const feedback = document.getElementById('ratio-feedback');
+            const autoBalanceButton = document.getElementById('apply-even-ratio-from-input');
             feedback.classList.remove('error', 'primary');
             try {
                 const ratioMeta = parseGroupRatios(document.getElementById('group-ratios').value, groupCount);
@@ -1336,10 +1350,14 @@
                 feedback.classList.add('show');
                 feedback.classList.add('primary');
                 feedback.textContent = `대조군 ${control}% | 실험군 ${treatments}%`;
+                autoBalanceButton.classList.add('is-hidden');
             } catch (error) {
                 feedback.classList.add('show');
                 feedback.classList.add('error');
                 feedback.textContent = error.message;
+                const shouldShowAutoBalance = typeof error?.message === 'string'
+                    && (error.message.includes('합계는 100') || error.message.includes('그룹 수('));
+                autoBalanceButton.classList.toggle('is-hidden', !shouldShowAutoBalance);
             }
         }
 
@@ -1637,13 +1655,16 @@
             updateMdeComparison();
         }
 
-        function syncGroupCountFromRatiosInput() {
-            const groupRatiosInput = document.getElementById('group-ratios');
-            const groupCountSelect = document.getElementById('group-count');
-            const tokenCount = groupRatiosInput.value
+        function getRatioTokenCount() {
+            return document.getElementById('group-ratios').value
                 .split(/[\s,]+/)
                 .map((value) => value.trim())
                 .filter(Boolean).length;
+        }
+
+        function syncGroupCountFromRatiosInput() {
+            const groupCountSelect = document.getElementById('group-count');
+            const tokenCount = getRatioTokenCount();
 
             if (!tokenCount) {
                 return;
@@ -1659,6 +1680,35 @@
             if (parseInt(groupCountSelect.value, 10) !== tokenCount) {
                 groupCountSelect.value = String(tokenCount);
             }
+        }
+
+        function applyEvenRatiosFromInputTokens() {
+            const groupCountSelect = document.getElementById('group-count');
+            const tokenCount = getRatioTokenCount();
+            const feedback = document.getElementById('ratio-feedback');
+
+            if (!tokenCount) {
+                feedback.classList.remove('primary');
+                feedback.classList.add('show');
+                feedback.classList.add('error');
+                feedback.textContent = '쉼표로 구분된 그룹 비중을 먼저 입력하세요.';
+                return;
+            }
+
+            const matchedOption = Array.from(groupCountSelect.options).some(
+                (option) => Number(option.value) === tokenCount
+            );
+
+            if (!matchedOption) {
+                feedback.classList.remove('primary');
+                feedback.classList.add('show');
+                feedback.classList.add('error');
+                feedback.textContent = `그룹 수는 2~5개까지만 지원합니다. 현재 ${tokenCount}개입니다.`;
+                return;
+            }
+
+            groupCountSelect.value = String(tokenCount);
+            applyEvenRatios();
         }
 
         window.applySuggestedDuration = function applySuggestedDuration(days) {
@@ -1709,6 +1759,7 @@
         });
 
         document.getElementById('apply-even-ratio').addEventListener('click', applyEvenRatios);
+        document.getElementById('apply-even-ratio-from-input').addEventListener('click', applyEvenRatiosFromInputTokens);
 
         document.getElementById('prop-baseline').addEventListener('input', () => {
             updateMdePreview();
