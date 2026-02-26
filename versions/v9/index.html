@@ -2090,6 +2090,30 @@
             updateMdeComparison();
         }
 
+        function syncGroupCountFromRatiosInput() {
+            const groupRatiosInput = document.getElementById('group-ratios');
+            const groupCountSelect = document.getElementById('group-count');
+            const tokenCount = groupRatiosInput.value
+                .split(/[\s,]+/)
+                .map((value) => value.trim())
+                .filter(Boolean).length;
+
+            if (!tokenCount) {
+                return;
+            }
+
+            const matchedOption = Array.from(groupCountSelect.options).some(
+                (option) => Number(option.value) === tokenCount
+            );
+            if (!matchedOption) {
+                return;
+            }
+
+            if (parseInt(groupCountSelect.value, 10) !== tokenCount) {
+                groupCountSelect.value = String(tokenCount);
+            }
+        }
+
         window.applySuggestedDuration = function applySuggestedDuration(days) {
             document.getElementById('prop-duration').value = days;
             updateDurationFeedback();
@@ -2131,6 +2155,7 @@
         });
 
         document.getElementById('group-ratios').addEventListener('input', () => {
+            syncGroupCountFromRatiosInput();
             updateRatioFeedback();
             updateMdePreview();
             updateMdeComparison();

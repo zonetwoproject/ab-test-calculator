@@ -77,12 +77,7 @@ const GuideScreen = React.forwardRef<GuideScreenHandle>(function GuideScreen(_, 
   );
 
   React.useEffect(() => {
-    const parent = navigation.getParent();
-    if (!parent) {
-      return;
-    }
-
-    return parent.addListener('tabPress', () => {
+    return navigation.addListener('tabPress', () => {
       if (navigation.isFocused()) {
         scrollToTop();
       }

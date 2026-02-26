@@ -139,12 +139,7 @@ const WebAppScreen = React.forwardRef<WebAppScreenHandle>(function WebAppScreen(
   );
 
   React.useEffect(() => {
-    const parent = navigation.getParent();
-    if (!parent) {
-      return;
-    }
-
-    return parent.addListener('tabPress', () => {
+    return navigation.addListener('tabPress', () => {
       if (navigation.isFocused()) {
         scrollToTop();
       }
@@ -225,7 +220,6 @@ const WebAppScreen = React.forwardRef<WebAppScreenHandle>(function WebAppScreen(
             }}
             javaScriptEnabled
             domStorageEnabled
-            startInLoadingState
             injectedJavaScriptBeforeContentLoaded={NO_ZOOM_SCRIPT}
             scalesPageToFit={false}
             setBuiltInZoomControls={false}
