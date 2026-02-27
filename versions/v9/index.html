@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>A/B 테스트 계산기 Mark9</title>
+    <title>A/B 테스트 계산기 Mark10</title>
     <link rel="icon" type="image/svg+xml" href="/versions/v9/assets/favicon-ab.svg">
     <style>
         :root {
@@ -1272,7 +1272,7 @@
                 <span class="drag-icon">⋮⋮</span>
                 <div class="title-line">
                     <h1>실험 계산기</h1>
-                    <span class="version-badge">Mark9</span>
+                    <span class="version-badge">Mark10</span>
                 </div>
             </div>
         </div>
@@ -1290,7 +1290,7 @@
                 <div class="guide-box">
                     <ol>
                         <li>동일 지면에서 여러 실험을 진행할 때 샘플이 겹치지 않도록 슬롯을 나눠 사용하세요.</li>
-                        <li>실험 기간, 방문 수, 트래픽 사용률을 입력하면 권장 슬롯 수를 자동으로 계산합니다.</li>
+                        <li>실험 기간과 방문 수를 입력하면 권장 슬롯 수를 자동으로 계산합니다.</li>
                     </ol>
                 </div>
 
@@ -1316,15 +1316,6 @@
                         </div>
                         <div class="help-text">실험 분배 단위 기준, 최근 1개월 기준 일평균 방문 수를 입력하세요<br>(예. 디바이스 기준 실험의 경우 device_id의 일평균 방문)</div>
                         <div class="info-text" id="visitors-feedback"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="step-label" for="traffic-usage">전체 트래픽 중 실험 사용 비율</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="traffic-usage" value="100" min="1" max="100" step="1" required>
-                            <span class="unit">%</span>
-                        </div>
-                        <div class="help-text">예: 70 입력 시 추정 고유 유저의 70%만 실험에 사용합니다.</div>
                         <div class="highlight-box" id="preview-users"></div>
                     </div>
                 </div>
@@ -1502,17 +1493,12 @@
 
         const GUIDE_CONTENT = Object.freeze({
             introTitle: '실험 계산기란?',
-            introText: '동일 지면에서 여러 실험을 진행할 때 샘플이 겹치지 않도록 슬롯을 나눠 사용하세요. 실험 기간, 방문 수, 트래픽 사용률을 입력하면 권장 슬롯 수를 자동으로 계산합니다.',
+            introText: '동일 지면에서 여러 실험을 진행할 때 샘플이 겹치지 않도록 슬롯을 나눠 사용하세요. 실험 기간과 방문 수를 입력하면 권장 슬롯 수를 자동으로 계산합니다.',
             inputItems: [
                 {
                     icon: '🧪',
                     title: '실험 기간은 며칠인가요?',
                     description: '실험 기간은 1일 이상 입력하세요. 요일 효과를 반영하려면 최소 7일, 안정적인 결과를 위해 14일 이상을 권장합니다.'
-                },
-                {
-                    icon: '🧱',
-                    title: '전체 트래픽 중 실험 사용 비율',
-                    description: '예: 70 입력 시 추정 고유 유저의 70%만 실험에 사용합니다.'
                 },
                 {
                     icon: '🎯',
@@ -1533,9 +1519,9 @@
             formulas: [
                 {
                     title: '고유 유저 수',
-                    description: '일평균 방문자 수와 실험 기간을 곱해 예상 고유 유저를 계산하고,\n실험 사용 비율을 반영해 실제 사용 가능 유저를 계산합니다.',
-                    equation: '예상 고유 유저 수 = 반올림(일평균 방문자 수 × 실험 기간)\n실험 사용 가능 유저 수 = 반올림(예상 고유 유저 수 × 실험 사용 비율 / 100)',
-                    code: 'totalUniqueUsers = round(dailyVisitors * duration)\navailableUsers = round(totalUniqueUsers * trafficUsagePct / 100)'
+                    description: '일평균 방문자 수와 실험 기간을 곱해 예상 고유 유저 수를 계산합니다.',
+                    equation: '예상 고유 유저 수 = 반올림(일평균 방문자 수 × 실험 기간)',
+                    code: 'totalUniqueUsers = round(dailyVisitors * duration)'
                 },
                 {
                     title: '개선 목표 변환',
@@ -1551,19 +1537,19 @@
                 },
                 {
                     title: '슬롯 계산',
-                    description: '사용 가능 유저를 10,000개 슬롯 기준으로 환산해\n필요한 슬롯 수를 계산합니다.',
-                    equation: '슬롯당 유저 수 = 실험 사용 가능 유저 수 / 10,000\n필요 슬롯 수 = 올림(총 필요 샘플 수 / 슬롯당 유저 수)\n슬롯 사용률(%) = 필요 슬롯 수 / 10,000 × 100',
+                    description: '예상 고유 유저 수를 10,000개 슬롯 기준으로 환산해\n필요한 슬롯 수를 계산합니다.',
+                    equation: '슬롯당 유저 수 = 예상 고유 유저 수 / 10,000\n필요 슬롯 수 = 올림(총 필요 샘플 수 / 슬롯당 유저 수)\n슬롯 사용률(%) = 필요 슬롯 수 / 10,000 × 100',
                     code: 'usersPerSlot = availableUsers / 10000\nrequiredSlots = ceil(requiredTotal / usersPerSlot)\nslotUsagePct = (requiredSlots / 10000) * 100'
                 },
                 {
                     title: 'MDE 역산',
                     description: '현재 조건에서 검증 가능한 최소 개선율을 찾기 위해,\n개선율을 가정하고 샘플 수를 비교하면서 범위를 반복적으로 줄입니다.',
-                    equation: '1) 개선율 r 가정 → p2 계산\n2) 해당 r의 필요 샘플 계산\n3) 필요 샘플 > 사용 가능 유저면 r 증가\n4) 필요 샘플 ≤ 사용 가능 유저면 r 감소\n5) 이 과정을 반복해 최소 r 확정 (최대 60회)\n\n최종 MDE(상대 %) = r * 100\n최종 MDE(절대 %p) = p1 * r * 100',
+                    equation: '1) 개선율 r 가정 → p2 계산\n2) 해당 r의 필요 샘플 계산\n3) 필요 샘플 > 예상 고유 유저 수면 r 증가\n4) 필요 샘플 ≤ 예상 고유 유저 수면 r 감소\n5) 이 과정을 반복해 최소 r 확정 (최대 60회)\n\n최종 MDE(상대 %) = r * 100\n최종 MDE(절대 %p) = p1 * r * 100',
                     code: 'low = 0.0001\nhigh = min(3, ((1 - p1) / p1) * 0.999)\nfor up to 60 iterations:\n  mid = (low + high) / 2\n  required = requiredUsers(mid)\n  if required <= availableUsers: high = mid\n  else: low = mid'
                 }
             ],
-            footerTitle: 'A/B 테스트 계산기 Mark9',
-            footerSub: 'v9 · 2026'
+            footerTitle: 'A/B 테스트 계산기 Mark10',
+            footerSub: 'v10 · 2026'
         });
 
         let latestResultSummary = '';
@@ -1700,8 +1686,7 @@
             return {
                 duration: parseInt(document.getElementById('prop-duration').value, 10),
                 dailyVisitors: parseFloat(document.getElementById('prop-daily-visitors').value),
-                trafficUsagePct: parseFloat(document.getElementById('traffic-usage').value),
-                groupCount: parseInt(document.getElementById('group-count').value, 10),
+                                groupCount: parseInt(document.getElementById('group-count').value, 10),
                 groupRatiosText: document.getElementById('group-ratios').value,
                 baselinePct: parseFloat(document.getElementById('prop-baseline').value),
                 mdeMode: document.getElementById('mde-mode').value,
@@ -1769,21 +1754,20 @@
             const previewBox = document.getElementById('preview-users');
             const formData = getFormData();
 
-            if (!formData.duration || !formData.dailyVisitors || !formData.trafficUsagePct) {
+            if (!formData.duration || !formData.dailyVisitors) {
                 previewBox.style.display = 'none';
                 return;
             }
 
             try {
                 const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
-                const availableUsers = Math.round(totalUniqueUsers * (formData.trafficUsagePct / 100));
+                const availableUsers = totalUniqueUsers;
 
                 previewBox.style.display = 'block';
                 previewBox.innerHTML = `
                     <strong>💡 예상 고유 유저: 약 ${formatNumber(totalUniqueUsers)}명</strong><br>
-                    실험 사용 비율 ${formData.trafficUsagePct}% 적용 시: <strong>${formatNumber(availableUsers)}명</strong><br>
                     <span class="preview-meta">
-                        계산: (${formatNumber(formData.dailyVisitors)} × ${formData.duration}일) × ${formData.trafficUsagePct}%
+                        계산: ${formatNumber(formData.dailyVisitors)} × ${formData.duration}일
                     </span>
                 `;
             } catch {
@@ -1864,7 +1848,7 @@
             validateBaseFormData(formData, ratioMeta);
 
             const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
-            const availableUsers = Math.round(totalUniqueUsers * (formData.trafficUsagePct / 100));
+            const availableUsers = totalUniqueUsers;
 
             return {
                 formData,
@@ -1894,17 +1878,16 @@
                 const ratioMeta = parseGroupRatios(formData.groupRatiosText, formData.groupCount);
                 const hasRequiredContext = Number.isFinite(formData.duration) && formData.duration >= 1
                     && Number.isFinite(formData.dailyVisitors) && formData.dailyVisitors >= 1
-                    && Number.isFinite(formData.trafficUsagePct) && formData.trafficUsagePct > 0 && formData.trafficUsagePct <= 100
                     && Number.isFinite(formData.confidencePct) && formData.confidencePct > 50 && formData.confidencePct < 100
                     && Number.isFinite(formData.powerPct) && formData.powerPct > 50 && formData.powerPct < 100;
 
                 if (!hasRequiredContext) {
-                    previewBox.innerHTML = '💡 현재 지표가 입력되었습니다. 실험 기간/하루 방문수/트래픽 사용 비율을 입력하면 최소 효과를 계산합니다.';
+                    previewBox.innerHTML = '💡 현재 지표가 입력되었습니다. 실험 기간/하루 방문 수를 입력하면 최소 효과를 계산합니다.';
                     return;
                 }
 
                 const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
-                const availableUsers = Math.round(totalUniqueUsers * (formData.trafficUsagePct / 100));
+                const availableUsers = totalUniqueUsers;
 
                 const detectable = calculateDetectableMde(
                     availableUsers,
@@ -1943,7 +1926,7 @@
                 validateFormData(formData, ratioMeta);
 
                 const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
-                const availableUsers = Math.round(totalUniqueUsers * (formData.trafficUsagePct / 100));
+                const availableUsers = totalUniqueUsers;
                 const detectable = calculateDetectableMde(
                     availableUsers,
                     formData.baselinePct,
@@ -1992,7 +1975,7 @@
                         continue;
                     }
                     const futureTotal = Math.round(formData.dailyVisitors * days);
-                    const futureAvailable = Math.round(futureTotal * (formData.trafficUsagePct / 100));
+                    const futureAvailable = futureTotal;
                     const futureDetectable = calculateDetectableMde(
                         futureAvailable,
                         formData.baselinePct,
@@ -2010,7 +1993,7 @@
                 comparisonBox.innerHTML = `
                     현재 최소 감지 가능 개선: ${detectable.relativePct.toFixed(4)}% (상대)<br>
                     목표(${targetRelative.toFixed(2)}%)는 현재 설정에서 검증이 어렵습니다.<br>
-                    <div class="comparison-suggestions">${suggestions || '권장: 기간 연장 또는 트래픽 사용 비율 상향을 검토하세요.'}</div>
+                    <div class="comparison-suggestions">${suggestions || '권장: 기간 연장 또는 일평균 방문 수 증가를 검토하세요.'}</div>
                 `;
             } catch {
                 comparisonBox.className = 'comparison-box';
@@ -2079,7 +2062,6 @@
                 `🧾 입력 요약\n` +
                 `- 실험 기간: ${formData.duration}일\n` +
                 `- 일평균 방문자 수: ${formatNumber(formData.dailyVisitors)}명\n` +
-                `- 실험 사용 비율: ${formData.trafficUsagePct}%\n` +
                 `- 예상 고유 유저 수: ${formatNumber(result.availableUsers)}명\n` +
                 `- 실험 그룹 배분: ${allocationText}\n\n` +
                 `🎯 지표 및 검증 가능성\n` +
@@ -2189,12 +2171,6 @@
 
         document.getElementById('prop-daily-visitors').addEventListener('input', () => {
             updateVisitorsFeedback();
-            updateUniqueUsersPreview();
-            updateMdePreview();
-            updateMdeComparison();
-        });
-
-        document.getElementById('traffic-usage').addEventListener('input', () => {
             updateUniqueUsersPreview();
             updateMdePreview();
             updateMdeComparison();

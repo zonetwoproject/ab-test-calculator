@@ -237,9 +237,6 @@ export function validateBaseFormData(formData, ratioMeta) {
   if (!Number.isFinite(formData.dailyVisitors) || formData.dailyVisitors < 1) {
     throw new Error('하루 방문수를 1 이상 입력해주세요.');
   }
-  if (!Number.isFinite(formData.trafficUsagePct) || formData.trafficUsagePct <= 0 || formData.trafficUsagePct > 100) {
-    throw new Error('실험 사용 비율은 0 초과 100 이하로 입력해주세요.');
-  }
   if (!Number.isFinite(formData.baselinePct) || formData.baselinePct <= 0 || formData.baselinePct >= 100) {
     throw new Error('현재 지표는 0~100 사이 값으로 입력해주세요.');
   }
@@ -282,7 +279,7 @@ export function calculateExperiment(formData, ratioMeta) {
   const { zAlpha, zBeta } = getZScores(formData.confidencePct, formData.powerPct);
 
   const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
-  const availableUsers = Math.round(totalUniqueUsers * (formData.trafficUsagePct / 100));
+  const availableUsers = totalUniqueUsers;
 
   const requiredTotalRaw = calculateRequiredTotalUsers(p1, relativeEffect, controlRatio, treatmentRatios, zAlpha, zBeta);
   const requiredTotal = Math.ceil(requiredTotalRaw);

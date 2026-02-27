@@ -3,10 +3,8 @@ import { View, Text, ScrollView, StyleSheet, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import {
-  BookOpen,
   FlaskConical,
   BarChart3,
-  Layers,
   Target,
   Info,
 } from 'lucide-react-native';
@@ -87,9 +85,9 @@ const GuideScreen = React.forwardRef<GuideScreenHandle>(function GuideScreen(_, 
   const formulaCards: FormulaCardProps[] = [
     {
       title: '고유 유저 수',
-      description: '일평균 방문자 수와 실험 기간을 곱해 예상 고유 유저를 계산하고,\n실험 사용 비율을 반영해 실제 사용 가능 유저를 계산합니다.',
-      equation: '예상 고유 유저 수 = 반올림(일평균 방문자 수 × 실험 기간)\n실험 사용 가능 유저 수 = 반올림(예상 고유 유저 수 × 실험 사용 비율 / 100)',
-      code: 'totalUniqueUsers = round(dailyVisitors * duration)\navailableUsers = round(totalUniqueUsers * trafficUsagePct / 100)',
+      description: '일평균 방문자 수와 실험 기간을 바탕으로 예상 고유 유저를 계산합니다.',
+      equation: '예상 고유 유저 수 = 반올림(일평균 방문자 수 × 실험 기간)',
+      code: 'totalUniqueUsers = round(dailyVisitors * duration)\navailableUsers = totalUniqueUsers',
     },
     {
       title: '개선 목표 변환',
@@ -128,7 +126,7 @@ const GuideScreen = React.forwardRef<GuideScreenHandle>(function GuideScreen(_, 
           <Text style={styles.introTitle}>실험 계산기란?</Text>
           <Text style={styles.introText}>
             동일 지면에서 여러 실험을 진행할 때 샘플이 겹치지 않도록 슬롯을 나눠 사용하세요.
-            실험 기간, 방문 수, 트래픽 사용률을 입력하면 권장 슬롯 수를 자동으로 계산합니다.
+            실험 기간, 방문 수를 입력하면 권장 슬롯 수를 자동으로 계산합니다.
           </Text>
         </View>
 
@@ -138,11 +136,6 @@ const GuideScreen = React.forwardRef<GuideScreenHandle>(function GuideScreen(_, 
           icon={<FlaskConical size={18} color={Colors.primary} />}
           title="실험 기간은 며칠인가요?"
           description="실험 기간은 1일 이상 입력하세요. 요일 효과를 반영하려면 최소 7일, 안정적인 결과를 위해 14일 이상을 권장합니다."
-        />
-        <GuideItem
-          icon={<Layers size={18} color={Colors.warning} />}
-          title="전체 트래픽 중 실험 사용 비율"
-          description="예: 70 입력 시 추정 고유 유저의 70%만 실험에 사용합니다."
         />
         <GuideItem
           icon={<Target size={18} color={Colors.error} />}
@@ -173,8 +166,8 @@ const GuideScreen = React.forwardRef<GuideScreenHandle>(function GuideScreen(_, 
         ))}
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>A/B 테스트 계산기 Mark9</Text>
-          <Text style={styles.footerSub}>v9 · 2026</Text>
+          <Text style={styles.footerText}>A/B 테스트 계산기 Mark10</Text>
+          <Text style={styles.footerSub}>v10 · 2026</Text>
         </View>
     </ScrollView>
   );

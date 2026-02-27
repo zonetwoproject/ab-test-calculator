@@ -1,70 +1,109 @@
 import React from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { BookOpen, Globe } from 'lucide-react-native';
+import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import Colors from '@/constants/color';
 import GuideScreen from '@/screens/GuideScreen';
-import WebAppScreen from '@/screens/WebAppScreen';
+import WebAppScreen, { type WebNativeScrollSignal } from '@/screens/WebAppScreen';
 
 type RootTabParamList = {
-  WebApp: undefined;
+  Calculator: undefined;
   Guide: undefined;
 };
 
-const Tab = createBottomTabNavigator<RootTabParamList>();
+const Tab = createNativeBottomTabNavigator<RootTabParamList>();
 
 function HeaderTitle() {
   return (
-    <View style={styles.headerCenter}>
-      <Text style={styles.headerTitle}>실험 계산기</Text>
-      <View style={styles.badge}>
-        <Text style={styles.badgeText}>Mark9</Text>
+    <View style={styles.headerTitleWrap}>
+      <Text style={styles.headerTitleText}>배민 실험 계산기</Text>
+      <View style={styles.betaBadge}>
+        <Text style={styles.betaBadgeText}>beta</Text>
       </View>
     </View>
   );
 }
 
 export default function App() {
+  const [isCalculatorTabBarCollapsed, setIsCalculatorTabBarCollapsed] = React.useState(false);
+
+  const handleCalculatorNativeScroll = React.useCallback((signal: WebNativeScrollSignal) => {
+    if (Platform.OS !== 'ios') {
+      return;
+    }
+
+    setIsCalculatorTabBarCollapsed((prev) => {
+      if (signal.atTop || signal.direction === 'up') {
+        return false;
+      }
+
+      if (signal.direction === 'down' && signal.y > 20) {
+        return true;
+      }
+
+      return prev;
+    });
+  }, []);
+
   return (
     <GestureHandlerRootView style={styles.root}>
       <NavigationContainer>
         <Tab.Navigator
-          screenOptions={{
+          screenOptions={({ route }) => ({
+            headerTitle: () => <HeaderTitle />,
             tabBarActiveTintColor: Colors.primary,
             tabBarInactiveTintColor: Colors.textTertiary,
-            tabBarStyle: {
-              backgroundColor: Colors.surface,
-              borderTopColor: Colors.borderLight,
-            },
+            tabBarMinimizeBehavior:
+              Platform.OS === 'ios'
+                ? route.name === 'Calculator'
+                  ? 'never'
+                  : 'onScrollDown'
+                : undefined,
+            tabBarStyle:
+              Platform.OS === 'ios' && route.name === 'Calculator' && isCalculatorTabBarCollapsed
+                ? {
+                    height: 46,
+                    paddingTop: 6,
+                    paddingBottom: 6,
+                  }
+                : undefined,
+            tabBarShowLabel:
+              Platform.OS === 'ios' && route.name === 'Calculator'
+                ? !isCalculatorTabBarCollapsed
+                : true,
+            overrideScrollViewContentInsetAdjustmentBehavior: true,
+            headerShown: true,
             tabBarLabelStyle: {
               fontSize: 11,
               fontWeight: '600',
             },
-            headerStyle: {
-              backgroundColor: Colors.surface,
-            },
-            headerShadowVisible: false,
-          }}
+          })}
         >
           <Tab.Screen
-            name="WebApp"
+            name="Calculator"
+            listeners={{
+              blur: () => setIsCalculatorTabBarCollapsed(false),
+            }}
             options={{
               title: '계산기',
-              tabBarLabel: '계산기',
-              headerTitle: () => <HeaderTitle />,
-              headerTitleAlign: 'center',
-              tabBarIcon: ({ color, size }) => <Globe size={size} color={color} />,
+              tabBarIcon: ({ focused }) => ({
+                type: 'sfSymbol',
+                name: focused ? 'divide.square.fill' : 'divide.square',
+              }),
             }}
-            component={WebAppScreen}
-          />
+          >
+            {() => <WebAppScreen onNativeScroll={handleCalculatorNativeScroll} />}
+          </Tab.Screen>
           <Tab.Screen
             name="Guide"
             options={{
               title: '사용 가이드',
-              tabBarIcon: ({ color, size }) => <BookOpen size={size} color={color} />,
+              tabBarIcon: ({ focused }) => ({
+                type: 'sfSymbol',
+                name: focused ? 'book.fill' : 'book',
+              }),
             }}
             component={GuideScreen}
           />
@@ -78,27 +117,26 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  headerCenter: {
+  headerTitleWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
+    gap: 6,
   },
-  headerTitle: {
-    fontSize: 15,
+  headerTitleText: {
+    fontSize: 17,
     fontWeight: '700',
     color: Colors.text,
-    letterSpacing: -0.2,
   },
-  badge: {
-    backgroundColor: Colors.primaryLight,
-    borderRadius: 6,
-    paddingHorizontal: 8,
+  betaBadge: {
+    paddingHorizontal: 7,
     paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: Colors.primaryLight,
   },
-  badgeText: {
+  betaBadgeText: {
     fontSize: 10,
     fontWeight: '700',
     color: Colors.primary,
+    textTransform: 'uppercase',
   },
 });
