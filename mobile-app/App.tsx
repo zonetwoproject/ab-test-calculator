@@ -35,11 +35,16 @@ export default function App() {
     }
 
     setIsCalculatorTabBarCollapsed((prev) => {
-      if (signal.atTop || signal.y < 8 || signal.direction === 'up') {
+      if (signal.atTop || signal.y <= 1) {
         return false;
       }
 
-      if (signal.direction === 'down' && signal.y > 24) {
+      if (signal.direction === 'up' && signal.dy < -0.5) {
+        return false;
+      }
+
+      // Keep collapse responsive even when available scroll range is short.
+      if (signal.direction === 'down' || signal.y >= 8) {
         return true;
       }
 
@@ -57,16 +62,14 @@ export default function App() {
             tabBarInactiveTintColor: Colors.textTertiary,
             tabBarMinimizeBehavior:
               Platform.OS === 'ios'
-                ? route.name === 'Calculator'
-                  ? 'never'
-                  : 'onScrollDown'
+                ? 'onScrollDown'
                 : undefined,
             tabBarStyle:
               Platform.OS === 'ios' && route.name === 'Calculator' && isCalculatorTabBarCollapsed
                 ? {
-                    height: 46,
-                    paddingTop: 6,
-                    paddingBottom: 6,
+                    height: 38,
+                    paddingTop: 3,
+                    paddingBottom: 3,
                   }
                 : undefined,
             tabBarShowLabel:
