@@ -6,7 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import Colors from '@/constants/color';
 import GuideScreen from '@/screens/GuideScreen';
-import WebAppScreen from '@/screens/WebAppScreen';
+import WebAppScreen, { type WebNativeScrollSignal } from '@/screens/WebAppScreen';
 
 type RootTabParamList = {
   Calculator: undefined;
@@ -27,15 +27,52 @@ function HeaderTitle() {
 }
 
 export default function App() {
+  const [isCalculatorTabBarCollapsed, setIsCalculatorTabBarCollapsed] = React.useState(false);
+
+  const handleCalculatorNativeScroll = React.useCallback((signal: WebNativeScrollSignal) => {
+    if (Platform.OS !== 'ios') {
+      return;
+    }
+
+    setIsCalculatorTabBarCollapsed((prev) => {
+      if (signal.atTop || signal.y < 8 || signal.direction === 'up') {
+        return false;
+      }
+
+      if (signal.direction === 'down' && signal.y > 24) {
+        return true;
+      }
+
+      return prev;
+    });
+  }, []);
+
   return (
     <GestureHandlerRootView style={styles.root}>
       <NavigationContainer>
         <Tab.Navigator
-          screenOptions={() => ({
+          screenOptions={({ route }) => ({
             headerTitle: () => <HeaderTitle />,
             tabBarActiveTintColor: Colors.primary,
             tabBarInactiveTintColor: Colors.textTertiary,
-            tabBarMinimizeBehavior: Platform.OS === 'ios' ? 'onScrollDown' : undefined,
+            tabBarMinimizeBehavior:
+              Platform.OS === 'ios'
+                ? route.name === 'Calculator'
+                  ? 'never'
+                  : 'onScrollDown'
+                : undefined,
+            tabBarStyle:
+              Platform.OS === 'ios' && route.name === 'Calculator' && isCalculatorTabBarCollapsed
+                ? {
+                    height: 46,
+                    paddingTop: 6,
+                    paddingBottom: 6,
+                  }
+                : undefined,
+            tabBarShowLabel:
+              Platform.OS === 'ios' && route.name === 'Calculator'
+                ? !isCalculatorTabBarCollapsed
+                : true,
             overrideScrollViewContentInsetAdjustmentBehavior: true,
             headerShown: true,
             tabBarLabelStyle: {
@@ -46,6 +83,9 @@ export default function App() {
         >
           <Tab.Screen
             name="Calculator"
+            listeners={{
+              blur: () => setIsCalculatorTabBarCollapsed(false),
+            }}
             options={{
               title: '계산기',
               tabBarIcon: ({ focused }) => ({
@@ -53,8 +93,9 @@ export default function App() {
                 name: focused ? 'divide.square.fill' : 'divide.square',
               }),
             }}
-            component={WebAppScreen}
-          />
+          >
+            {() => <WebAppScreen onNativeScroll={handleCalculatorNativeScroll} />}
+          </Tab.Screen>
           <Tab.Screen
             name="Guide"
             options={{

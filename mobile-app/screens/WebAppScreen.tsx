@@ -237,12 +237,23 @@ export type WebAppScreenHandle = {
   scrollToTop: () => void;
 };
 
-type WebAppScreenProps = Record<string, never>;
+export type WebNativeScrollSignal = {
+  y: number;
+  dy: number;
+  direction: 'up' | 'down' | 'idle';
+  atTop: boolean;
+  velocityY?: number;
+};
 
-const WebAppScreen = React.forwardRef<WebAppScreenHandle, WebAppScreenProps>(function WebAppScreen(_, ref) {
+type WebAppScreenProps = {
+  onNativeScroll?: (signal: WebNativeScrollSignal) => void;
+};
+
+const WebAppScreen = React.forwardRef<WebAppScreenHandle, WebAppScreenProps>(function WebAppScreen({ onNativeScroll }, ref) {
   const webViewRef = useRef<WebViewType>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const lastNativeScrollYRef = useRef(0);
   const [viewportHeight, setViewportHeight] = useState(1);
   const [webContentHeight, setWebContentHeight] = useState(1);
   const hasHeightReportRef = useRef(false);
@@ -360,13 +371,29 @@ const WebAppScreen = React.forwardRef<WebAppScreenHandle, WebAppScreenProps>(fun
         debugLog('onLayout', `height=${nextHeight}`);
       }}
       onScroll={(event) => {
+        const y = Math.max(0, event.nativeEvent.contentOffset.y);
+        if (onNativeScroll) {
+          const prevY = lastNativeScrollYRef.current;
+          const dy = y - prevY;
+          lastNativeScrollYRef.current = y;
+          const direction: WebNativeScrollSignal['direction'] =
+            dy > 0.5 ? 'down' : dy < -0.5 ? 'up' : 'idle';
+
+          onNativeScroll({
+            y,
+            dy,
+            direction,
+            atTop: y <= 2,
+            velocityY: event.nativeEvent.velocity?.y,
+          });
+        }
+
         const now = Date.now();
         if (now - lastScrollLogTsRef.current < 120) {
           return;
         }
         lastScrollLogTsRef.current = now;
 
-        const y = Math.max(0, event.nativeEvent.contentOffset.y);
         const ch = Math.max(0, event.nativeEvent.contentSize.height);
         const vh = Math.max(0, event.nativeEvent.layoutMeasurement.height);
         debugLog('onScroll', `y=${y.toFixed(1)}`, `content=${ch.toFixed(1)}`, `viewport=${vh.toFixed(1)}`);
