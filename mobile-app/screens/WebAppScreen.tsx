@@ -7,12 +7,12 @@ import type { WebView as WebViewType } from 'react-native-webview';
 
 import Colors from '@/constants/color';
 
-const WEBAPP_PROD_URLS = ['https://ab-test-calculator-one.vercel.app/versions/v9/index.html'];
-const BUNDLED_WEBAPP_SOURCE = require('../assets/web/v9.html');
+const WEBAPP_PROD_URLS = ['https://ab-test-calculator-one.vercel.app/versions/v11/index.html'];
+const BUNDLED_WEBAPP_SOURCE = require('../assets/web/v11.html');
 const IOS_SIMULATOR_URL = 'http://127.0.0.1:4173/';
 const ANDROID_EMULATOR_URL = 'http://10.0.2.2:4173/';
-const IOS_LOCAL_WEB_URL = 'http://127.0.0.1:3000/versions/v9';
-const ANDROID_LOCAL_WEB_URL = 'http://10.0.2.2:3000/versions/v9';
+const IOS_LOCAL_WEB_URL = 'http://127.0.0.1:3000/versions/v11';
+const ANDROID_LOCAL_WEB_URL = 'http://10.0.2.2:3000/versions/v11';
 const DEBUG_SCROLL = __DEV__;
 
 function isIgnorableWebViewError(nativeEvent: {
@@ -311,7 +311,7 @@ const WebAppScreen = React.forwardRef<WebAppScreenHandle, WebAppScreenProps>(fun
   const urls = useMemo(() => getWebAppUrls(), []);
   const url = urls[urlIndex];
   const webSource = useBundledFallback ? BUNDLED_WEBAPP_SOURCE : { uri: url };
-  const webSourceKey = useBundledFallback ? 'bundled-webapp-v9' : url;
+  const webSourceKey = useBundledFallback ? 'bundled-webapp-v11' : url;
   const webViewHeight = Math.max(viewportHeight, webContentHeight);
   const canScroll = webViewHeight > viewportHeight + 2;
 

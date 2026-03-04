@@ -1,0 +1,2592 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>A/B 테스트 계산기 Mark11</title>
+    <link rel="icon" type="image/svg+xml" href="/versions/v11/assets/favicon-ab.svg">
+    <style>
+        :root {
+            --bg-page: #f7faff;
+            --bg-panel: #ffffff;
+            --line: #e3eaf4;
+            --text-main: #111827;
+            --text-sub: #6b7280;
+            --blue-1: #2f83ef;
+            --blue-2: #1e64d7;
+            --blue-3: #1a5fcf;
+            --mint-text: #0f9968;
+            --radius-xl: 16px;
+            --radius-lg: 14px;
+            --radius-md: 12px;
+            --card-shadow: 0 2px 8px rgba(36, 80, 149, 0.06);
+            --fs-body: 13.5px;
+            --fs-title: 22px;
+            --fs-version: 12px;
+            --fs-label: 12px;
+            --fs-step: 14.5px;
+            --fs-input: 13.5px;
+            --fs-help: 11.5px;
+            --fs-unit: 13px;
+            --fs-btn: 13.5px;
+            --badge-size: 24px;
+            --badge-fs: 15px;
+            --control-h: 38px;
+            --row-gap: 14px;
+            --space-1: 4px;
+            --space-2: 6px;
+            --space-3: 8px;
+            --space-4: 10px;
+            --space-5: 12px;
+            --space-6: 14px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        body {
+            font-family: "Pretendard Variable", "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(180deg, #fbfdff 0%, var(--bg-page) 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: clamp(8px, 2.5vw, 14px);
+            padding-bottom: calc(clamp(12px, 3vw, 18px) + env(safe-area-inset-bottom));
+            font-size: var(--fs-body);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 860px;
+            margin: 0 auto;
+            border-radius: 0;
+            overflow: visible;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px 8px 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .title-line {
+            display: flex;
+            align-items: baseline;
+            gap: var(--space-2);
+        }
+
+        .drag-icon {
+            display: none;
+        }
+
+        .header h1 {
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.2px;
+            color: #111827;
+        }
+
+        .version-badge {
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #2f83ef;
+            background: #e8f0ff;
+            border-radius: 6px;
+            padding: 2px 8px;
+        }
+
+        .content {
+            padding: 0;
+            background: transparent;
+            width: 100%;
+        }
+
+        .content-inner {
+            max-width: 100%;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .tab-switcher {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: var(--space-2);
+            padding: var(--space-2);
+            border: 1px solid #d5e1f2;
+            border-radius: 14px;
+            background: #f3f7ff;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+        }
+
+        .tab-switcher-btn {
+            border: 1px solid transparent;
+            border-radius: 10px;
+            height: calc(var(--control-h) - 6px);
+            background: transparent;
+            color: #5a6982;
+            font-size: var(--fs-btn);
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .tab-switcher-btn.active {
+            background: #ffffff;
+            color: var(--blue-2);
+            border-color: #bed2f7;
+            box-shadow: 0 1px 3px rgba(37, 97, 193, 0.12);
+        }
+
+        .workspace-grid {
+            display: block;
+            width: 100%;
+        }
+
+        .calculator-pane,
+        .guide-pane {
+            min-width: 0;
+        }
+
+        .guide-pane {
+            display: none;
+        }
+
+        .content[data-active-tab="guide"] .calculator-pane {
+            display: none;
+        }
+
+        .content[data-active-tab="guide"] .guide-pane {
+            display: block;
+        }
+
+        #calculator-form {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(14px, 3.6vw, 22px);
+            margin-bottom: var(--space-5);
+        }
+
+        .guide-box {
+            background: #f5f9ff;
+            border: 1px solid #dde7f7;
+            border-radius: 14px;
+            padding: 12px 14px;
+            color: #5d6d86;
+            line-height: 1.5;
+            font-size: var(--fs-help);
+        }
+
+        .guide-box ol {
+            margin-left: 15px;
+            display: grid;
+            gap: var(--space-1);
+        }
+
+        .settings-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--line);
+            border-radius: clamp(16px, 4vw, 22px);
+            padding: clamp(14px, 4.6vw, 22px) clamp(12px, 4vw, 18px);
+            box-shadow: var(--card-shadow);
+            max-width: 100%;
+        }
+
+        .card-header {
+            margin-bottom: 14px;
+        }
+
+        .card-title {
+            font-size: calc(var(--fs-step) + 6px);
+            font-weight: 900;
+            color: #1d2433;
+            letter-spacing: -0.015em;
+            line-height: 1.2;
+        }
+
+        .card-subtitle {
+            margin-top: 4px;
+            font-size: calc(var(--fs-help) + 2px);
+            color: #9aa3b2;
+            font-weight: 600;
+        }
+
+        .step-block {
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .section-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--row-gap);
+            padding-bottom: 0;
+            border-bottom: none;
+            align-items: start;
+        }
+
+        .section-row .form-group {
+            margin-bottom: 0;
+        }
+
+        .section-row .step-block {
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .form-group {
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            min-width: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0;
+            color: var(--text-main);
+            font-size: var(--fs-label);
+            font-weight: 700;
+        }
+
+        .step-label {
+            display: block;
+            font-size: var(--fs-step);
+            font-weight: 800;
+            letter-spacing: -0.005em;
+            line-height: 1.35;
+            margin-bottom: 0;
+        }
+
+        .section-subtitle { display: none; }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            height: clamp(46px, 11vw, 52px);
+            border: 1px solid #dfe7f2;
+            border-radius: 16px;
+            background: #f9fbff;
+            color: #1f2937;
+            font-size: var(--fs-input);
+            padding: 0 clamp(12px, 3.6vw, 14px);
+            line-height: 1;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        input::placeholder {
+            color: #9aa4b5;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='14' height='8' viewBox='0 0 14 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 1.5L7 6L12 1.5' stroke='%236B7280' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 32px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--blue-3);
+            box-shadow: 0 0 0 2px rgba(26, 95, 207, 0.12);
+            background: #f8faff;
+        }
+
+        .input-with-unit {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-with-unit input {
+            width: 100%;
+            padding-right: clamp(56px, 14vw, 84px);
+        }
+
+        .unit {
+            position: absolute;
+            right: clamp(12px, 3.6vw, 14px);
+            top: 50%;
+            transform: translateY(-50%);
+            color: #99a2b2;
+            text-align: right;
+            font-size: var(--fs-unit);
+            font-weight: 700;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .help-text {
+            margin-top: 0;
+            font-size: var(--fs-help);
+            line-height: 1.42;
+            color: var(--text-sub);
+            overflow-wrap: anywhere;
+        }
+
+        .info-text {
+            display: none;
+            margin-top: 0;
+            border-radius: 14px;
+            background: #eef3fc;
+            color: #446093;
+            padding: 12px 14px;
+            font-size: var(--fs-help);
+            line-height: 1.42;
+            border: 2px solid #bfd5fa;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .info-text.show {
+            display: block;
+        }
+
+        .info-text.error {
+            color: #dc2626;
+            border-color: #f8b4b4;
+            background: #fef2f2;
+        }
+
+        .info-text.muted {
+            color: #1f8f62;
+            border-color: #9de7c5;
+            background: #eaf9f1;
+        }
+
+        .info-text.primary {
+            color: #2e68df;
+            border-color: #b5d2ff;
+            background: #edf4ff;
+        }
+
+        .info-text.warning {
+            color: #96620d;
+            border-color: #f6d48a;
+            background: #fff8e8;
+        }
+
+        .highlight-box {
+            margin-top: 0;
+            border-radius: 14px;
+            background: #edf4ff;
+            color: #2e68df;
+            padding: 12px 14px;
+            border: 2px solid #b5d2ff;
+            display: none;
+            font-size: var(--fs-input);
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .preview-meta {
+            font-size: var(--fs-help);
+            color: #334155;
+        }
+
+        .mde-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: var(--space-2);
+            margin-bottom: 0;
+        }
+
+        .mde-btn {
+            height: calc(var(--control-h) - 6px);
+            border-radius: 6px;
+            border: 1px solid #c6cfdb;
+            background: #f8fafd;
+            color: #334155;
+            font-size: var(--fs-input);
+            font-weight: 700;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+
+        .mde-btn:hover {
+            border-color: var(--blue-3);
+        }
+
+        .mde-btn.active {
+            color: #fff;
+            border-color: var(--blue-3);
+            background: linear-gradient(135deg, var(--blue-1), var(--blue-2));
+        }
+
+        .chip-btn {
+            border: 1px solid #c6cfdb;
+            border-radius: 6px;
+            background: #f8fafd;
+            color: #3b4454;
+            font-size: var(--fs-help);
+            font-weight: 700;
+            height: calc(var(--control-h) - 10px);
+            padding: 0 var(--space-4);
+            cursor: pointer;
+        }
+
+        .chip-btn:hover {
+            border-color: var(--blue-3);
+            background: #edf4ff;
+        }
+
+        .ratio-feedback-row {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .ratio-feedback-row .chip-btn {
+            align-self: flex-start;
+        }
+
+        .comparison-box {
+            display: none;
+            margin-top: 0;
+            border-radius: 8px;
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--fs-input);
+            line-height: 1.5;
+        }
+
+        .comparison-suggestions {
+            margin-top: var(--space-3);
+        }
+
+        .comparison-box.success {
+            display: block;
+            background: #eaf8ef;
+            color: #126645;
+            border: 1px solid #92d6af;
+        }
+
+        .comparison-box.warning {
+            display: block;
+            background: #fdf7e8;
+            color: #946103;
+            border: 1px solid #efce84;
+        }
+
+        .comparison-box.error {
+            display: block;
+            background: #fbecee;
+            color: #a11f2f;
+            border: 1px solid #efb3bc;
+        }
+
+        .collapsible {
+            border: 1px solid #d6e0ee;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        .subsection-divider {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            margin: 16px 0 10px;
+        }
+
+        .subsection-divider::before,
+        .subsection-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #cdd5e3;
+        }
+
+        .subsection-divider span {
+            font-size: var(--fs-label);
+            font-weight: 800;
+            color: #6a778f;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+        }
+
+        .collapsible-header {
+            background: #ffffff;
+            color: #3f4b61;
+            font-size: var(--fs-label);
+            font-weight: 800;
+            padding: var(--space-3) var(--space-4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 2px solid transparent;
+            border-radius: var(--radius-md);
+        }
+
+        .collapsible-header.open {
+            border-color: #1b63ca;
+        }
+
+        .collapsible-content {
+            display: none;
+            background: transparent;
+            border-top: 1px solid #e3e9f2;
+            padding: var(--space-3) var(--space-4) 0;
+        }
+
+        .collapsible-content.show {
+            display: block;
+        }
+
+        .collapsible-arrow {
+            font-size: var(--fs-label);
+            color: #374151;
+            transform: rotate(180deg);
+            transition: transform 0.2s ease;
+        }
+
+        .collapsible-header.open .collapsible-arrow {
+            transform: rotate(0deg);
+        }
+
+        .inline-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--row-gap);
+        }
+
+        .action-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--space-3);
+        }
+
+        .calculate-btn,
+        .reset-btn,
+        .copy-btn {
+            height: var(--control-h);
+            border-radius: 6px;
+            border: 1px solid transparent;
+            font-size: var(--fs-btn);
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .calculate-btn {
+            color: #fff;
+            background: linear-gradient(135deg, var(--blue-1) 0%, var(--blue-2) 100%);
+            box-shadow: 0 1px 4px rgba(31, 99, 212, 0.24);
+        }
+
+        .calculate-btn:hover {
+            filter: brightness(1.03);
+        }
+
+        .reset-btn,
+        .copy-btn {
+            background: #f3f7fd;
+            color: #374151;
+            border-color: #d9e3f0;
+        }
+
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            min-width: 118px;
+            padding: 0 var(--space-5);
+        }
+
+        .copy-icon {
+            width: 14px;
+            height: 14px;
+            color: #374151;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        .reset-btn:hover,
+        .copy-btn:hover {
+            background: #eaf2fb;
+        }
+
+        .results {
+            margin-top: var(--space-5);
+            display: none;
+            max-width: 100%;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-section {
+            border-radius: var(--radius-lg);
+            border: 1px solid #dfe7f3;
+            background: #ffffff;
+            box-shadow: var(--card-shadow);
+            padding: var(--space-4);
+            margin-bottom: var(--space-3);
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .result-hero {
+            background: linear-gradient(180deg, #ddf5ea 0%, #d3efe2 100%);
+            border: 1px solid #a8d7bf;
+            text-align: center;
+            padding: calc(var(--space-6) + var(--space-1)) var(--space-4);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 1px 6px rgba(16, 120, 84, 0.08);
+        }
+
+        .result-section h3 {
+            font-size: var(--fs-label);
+            font-weight: 800;
+            margin-bottom: var(--space-2);
+            color: #1f2937;
+        }
+
+        .result-hero h3 {
+            color: #0f6f4f;
+        }
+
+        .result-main {
+            font-size: clamp(25px, 6vw, 41px);
+            font-weight: 900;
+            color: var(--mint-text);
+            line-height: 1;
+            margin-bottom: var(--space-2);
+            letter-spacing: -0.02em;
+        }
+
+        .result-label {
+            font-size: var(--fs-input);
+            color: #5f697b;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0;
+        }
+
+        .result-card {
+            border-right: 1px solid #e1e6ee;
+            padding: 7px 6px;
+            text-align: center;
+            background: transparent;
+        }
+
+        .result-card:last-child {
+            border-right: none;
+        }
+
+        .result-card-label {
+            font-size: var(--fs-input);
+            color: #6b7280;
+            margin-bottom: var(--space-1);
+        }
+
+        .result-card-value {
+            font-size: clamp(15px, 2.4vw, 21px);
+            font-weight: 800;
+            color: #111827;
+            letter-spacing: -0.01em;
+        }
+
+        .result-report {
+            border: 1px solid #dbe2ee;
+            border-radius: 10px;
+            background: #ffffff;
+            padding: var(--space-4);
+            color: #344255;
+            font-size: var(--fs-input);
+            line-height: 1.65;
+            white-space: pre-line;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--fs-input);
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table th,
+        .table td {
+            border-bottom: 1px solid #e0e4ea;
+            padding: var(--space-2) var(--space-3);
+            text-align: left;
+        }
+
+        .table th {
+            font-size: var(--fs-input);
+            color: #4b5568;
+            background: #eef2f7;
+            font-weight: 700;
+        }
+
+        .result-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: var(--space-3);
+            margin-bottom: var(--space-5);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 0 var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));
+            color: #64748b;
+            font-size: var(--fs-help);
+        }
+
+        .guide-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--line);
+            border-radius: clamp(16px, 4vw, 22px);
+            padding: clamp(14px, 4.4vw, 20px) clamp(12px, 4vw, 18px);
+            box-shadow: var(--card-shadow);
+        }
+
+        .guide-intro-card {
+            background: linear-gradient(150deg, #2f83ef 0%, #1c66d8 100%);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: var(--space-4);
+        }
+
+        .guide-intro-title {
+            font-size: calc(var(--fs-step) + 1px);
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: var(--space-2);
+        }
+
+        .guide-intro-text {
+            font-size: var(--fs-input);
+            line-height: 1.58;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .guide-section-title {
+            font-size: calc(var(--fs-step) + 1px);
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: var(--space-3);
+            margin-top: var(--space-4);
+        }
+
+        .guide-section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        .guide-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-3);
+            border: 1px solid #dce5f1;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 12px;
+            margin-bottom: var(--space-2);
+        }
+
+        .guide-item-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #edf3ff;
+            color: #285ac4;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+
+        .guide-item-title {
+            font-size: var(--fs-input);
+            color: #1f2937;
+            font-weight: 800;
+            margin-bottom: 2px;
+            line-height: 1.35;
+        }
+
+        .guide-item-desc {
+            font-size: var(--fs-help);
+            color: #5f6b7e;
+            line-height: 1.56;
+        }
+
+        .guide-formula-card {
+            border: 1px solid #dce5f1;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 12px;
+            margin-bottom: var(--space-2);
+        }
+
+        .guide-formula-title {
+            font-size: var(--fs-help);
+            font-weight: 800;
+            color: #2f6fde;
+            margin-bottom: var(--space-2);
+        }
+
+        .guide-formula-section {
+            margin-top: 10px;
+        }
+
+        .guide-formula-section:first-of-type {
+            margin-top: 0;
+        }
+
+        .guide-formula-label {
+            font-size: calc(var(--fs-help) - 0.2px);
+            font-weight: 800;
+            color: #4b5b73;
+            margin-bottom: 4px;
+        }
+
+        .guide-formula-desc,
+        .guide-formula-equation {
+            font-size: calc(var(--fs-help) - 0.2px);
+            color: #55647b;
+            line-height: 1.62;
+            white-space: normal;
+        }
+
+        .guide-formula-code {
+            font-size: calc(var(--fs-help) - 0.2px);
+            color: #37465d;
+            line-height: 1.62;
+            white-space: normal;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            background: #f6f8fc;
+            border: 1px solid #e3e8f2;
+            border-radius: 8px;
+            padding: 8px 10px;
+        }
+
+        .guide-note-card {
+            border: 1px solid #dce5f1;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 12px;
+        }
+
+        .guide-note-list {
+            list-style: none;
+            display: grid;
+            gap: 4px;
+            color: #4b5b73;
+            font-size: var(--fs-help);
+            line-height: 1.55;
+        }
+
+        .guide-note-list li::before {
+            content: "• ";
+            color: #2f6fde;
+            font-weight: 700;
+        }
+
+        .guide-footer {
+            margin-top: var(--space-4);
+            text-align: center;
+            color: #7b879b;
+            font-size: calc(var(--fs-help) - 0.2px);
+            line-height: 1.45;
+        }
+
+        .custom-k-wrap,
+        .chip-wrap {
+            margin-top: var(--space-3);
+        }
+
+        .is-hidden {
+            display: none !important;
+        }
+
+        .footer a {
+            color: var(--blue-3);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .guide-box,
+        .content,
+        .content-inner,
+        .workspace-grid,
+        .guide-panel,
+        .table,
+        .action-row {
+            max-width: 100%;
+        }
+
+        @media (max-width: 767px) {
+            .container {
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 7px 9px;
+            }
+
+            .content {
+                padding: 0;
+            }
+
+            .tab-switcher {
+                gap: 4px;
+                padding: 4px;
+            }
+
+            .guide-box {
+                padding: 10px 12px;
+            }
+
+            .settings-card {
+                border-radius: 18px;
+                padding: 16px 14px;
+            }
+
+            .section-row,
+            .inline-row {
+                grid-template-columns: 1fr;
+                gap: var(--row-gap);
+            }
+
+            .mde-buttons {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .action-row {
+                grid-template-columns: 1fr;
+                gap: var(--space-3);
+            }
+
+            .result-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .result-card {
+                border-right: 1px solid #e1e6ee;
+                border-bottom: none;
+                padding: 6px 4px;
+            }
+
+            .result-card:last-child {
+                border-right: none;
+            }
+
+            .result-card-label {
+                font-size: calc(var(--fs-input) - 1px);
+                white-space: nowrap;
+            }
+
+            .result-card-value {
+                font-size: clamp(12px, 3.2vw, 16px);
+            }
+
+            .subsection-divider {
+                margin: 14px 0 8px;
+            }
+
+            .guide-panel {
+                border-radius: 18px;
+                padding: 16px 14px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 100%;
+            }
+
+            .section-row,
+            .metric-goal-row,
+            .inline-row {
+                grid-template-columns: 1fr !important;
+            }
+
+            .action-row {
+                grid-template-columns: 1fr;
+                gap: var(--space-3);
+                position: static;
+                padding: 0;
+                border: 0;
+                background: transparent;
+                backdrop-filter: none;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .card-title {
+                font-size: calc(var(--fs-step) + 4px);
+            }
+
+            .step-label {
+                line-height: 1.3;
+            }
+
+            .mde-btn {
+                font-size: calc(var(--fs-input) - 0.5px);
+            }
+        }
+
+        @media (min-width: 768px) and (max-width: 1199px) {
+            :root {
+                --fs-body: 14.5px;
+                --fs-title: 25px;
+                --fs-version: 13px;
+                --fs-label: 13px;
+                --fs-step: 16px;
+                --fs-input: 14px;
+                --fs-help: 12px;
+                --fs-unit: 14px;
+                --fs-btn: 14px;
+                --badge-size: 27px;
+                --badge-fs: 16px;
+                --control-h: 42px;
+                --row-gap: 15px;
+                --space-1: 4px;
+                --space-2: 7px;
+                --space-3: 10px;
+                --space-4: 12px;
+                --space-5: 14px;
+                --space-6: 16px;
+            }
+
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                max-width: 980px;
+            }
+
+            .content {
+                padding: var(--space-3) var(--space-4) var(--space-4);
+            }
+
+            .section-row,
+            .inline-row {
+                grid-template-columns: 1fr;
+                gap: var(--row-gap);
+            }
+
+            .action-row {
+                grid-template-columns: 1fr;
+                gap: var(--space-3);
+            }
+
+            .result-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .result-card {
+                border-right: 1px solid #e1e6ee;
+                border-bottom: none;
+            }
+
+            .result-card:last-child {
+                border-right: none;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            :root {
+                --fs-body: 15px;
+                --fs-title: 27px;
+                --fs-version: 13.5px;
+                --fs-label: 13.5px;
+                --fs-step: 16.5px;
+                --fs-input: 14.5px;
+                --fs-help: 12.25px;
+                --fs-unit: 14.5px;
+                --fs-btn: 14.5px;
+                --badge-size: 28px;
+                --badge-fs: 16.5px;
+                --control-h: 43px;
+                --row-gap: 16px;
+                --space-1: 4px;
+                --space-2: 8px;
+                --space-3: 10px;
+                --space-4: 13px;
+                --space-5: 16px;
+                --space-6: 18px;
+            }
+
+            body {
+                padding: 14px;
+            }
+
+            .container {
+                max-width: 1240px;
+            }
+
+            .content {
+                padding: var(--space-4) var(--space-5) var(--space-5);
+            }
+
+            .content-inner {
+                max-width: 1200px;
+            }
+
+            .tab-switcher {
+                display: none;
+            }
+
+            .workspace-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+                gap: var(--space-4);
+                align-items: start;
+            }
+
+            .guide-pane {
+                display: block;
+                position: sticky;
+                top: 14px;
+            }
+
+            .guide-panel {
+                max-height: calc(100vh - 28px);
+                overflow: auto;
+            }
+
+            #calculator-form {
+                gap: var(--space-4);
+            }
+
+            .header {
+                padding: 9px 14px;
+            }
+
+            .section-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: var(--row-gap);
+            }
+
+            .paired-steps {
+                grid-template-columns: 1.1fr 0.9fr;
+            }
+
+            .traffic-row {
+                grid-template-columns: 1.05fr 0.95fr;
+            }
+
+            .group-row {
+                grid-template-columns: 0.95fr 1.05fr;
+            }
+
+            .metric-goal-row {
+                grid-template-columns: 1.12fr 0.88fr;
+            }
+
+            .inline-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .action-row {
+                grid-template-columns: 1fr 116px;
+            }
+        }
+
+        @media (max-width: 1199px) {
+            .footer {
+                padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+            }
+        }
+
+        @media (max-height: 520px) and (orientation: landscape) {
+            body {
+                padding: 8px;
+            }
+
+            #calculator-form {
+                gap: 12px;
+            }
+
+            .guide-box {
+                padding: 10px 12px;
+            }
+
+            .settings-card {
+                padding: 14px;
+            }
+
+            .form-group {
+                gap: 7px;
+                margin-bottom: 6px;
+            }
+
+            .section-row.metric-goal-row,
+            .inline-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .mde-buttons {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+
+            .action-row {
+                grid-template-columns: 1fr;
+            }
+
+            .result-section {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <span class="drag-icon">⋮⋮</span>
+                <div class="title-line">
+                    <h1>실험 계산기</h1>
+                    <span class="version-badge">Mark11</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content" data-active-tab="calculator">
+            <div class="content-inner">
+                <div class="workspace">
+                    <div class="tab-switcher" role="tablist" aria-label="서비스 탭">
+                        <button type="button" class="tab-switcher-btn active" data-tab="calculator" role="tab" aria-selected="true">계산기</button>
+                        <button type="button" class="tab-switcher-btn" data-tab="guide" role="tab" aria-selected="false">사용 가이드</button>
+                    </div>
+                    <div class="workspace-grid">
+                        <div class="calculator-pane">
+                            <form id="calculator-form">
+                <div class="guide-box">
+                    <ol>
+                        <li>동일 지면에서 여러 실험을 진행할 때 샘플이 겹치지 않도록 슬롯을 나눠 사용하세요.</li>
+                        <li>실험 기간과 방문 수를 입력하면 권장 슬롯 수를 자동으로 계산합니다.</li>
+                    </ol>
+                </div>
+
+                <div class="settings-card">
+                    <div class="card-header">
+                        <div class="card-title">고유 유저 계산하기</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="step-label" for="prop-duration">실험 기간은 며칠인가요?</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="prop-duration" value="14" min="1" step="1" required>
+                            <span class="unit">일</span>
+                        </div>
+                        <div class="info-text" id="duration-feedback"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="step-label" for="prop-daily-visitors">하루에 몇 명이 방문하나요?</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="prop-daily-visitors" placeholder="예: 100000" min="1" step="1" required>
+                            <span class="unit">명/일</span>
+                        </div>
+                        <div class="help-text">실험 분배 단위 기준, 최근 1개월 기준 일평균 방문 수를 입력하세요<br>(예. 디바이스 기준 실험의 경우 device_id의 일평균 방문)</div>
+                        <div class="info-text" id="visitors-feedback"></div>
+                        <div class="highlight-box" id="preview-users"></div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <div class="card-header">
+                        <div class="card-title">실험 그룹 배분하기</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="step-label" for="group-count">실험 그룹 수 (대조군 포함)</label>
+                        <select id="group-count">
+                            <option value="2" selected>2개 (A/B)</option>
+                            <option value="3">3개 (A/B/C)</option>
+                            <option value="4">4개 (A/B/C/D)</option>
+                            <option value="5">5개 (A/B/C/D/E)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="step-label" for="group-ratios">배분 비율을 선택하세요</label>
+                        <input type="text" id="group-ratios" value="50,50" placeholder="예: 50,30,20">
+                        <div class="help-text">첫 번째 값은 대조군입니다. 쉼표로 구분하세요.</div>
+                        <div class="ratio-feedback-row">
+                            <div class="info-text" id="ratio-feedback"></div>
+                            <button type="button" class="chip-btn is-hidden" id="apply-even-ratio-from-input">입력 그룹수 기준 자동 분배</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <div class="card-header">
+                        <div class="card-title">최소 감지 효과 계산하기</div>
+                    </div>
+
+                    <div class="section-row metric-goal-row">
+                        <div class="form-group">
+                            <label class="step-label" for="prop-baseline">목표 지표의 현재 수준은 어떤가요?</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="prop-baseline" placeholder="예: 3" min="0" max="100" step="0.0001" required>
+                                <span class="unit">%</span>
+                            </div>
+                            <div class="help-text">목표하는 지표의 최근 일평균 값을 입력해주세요. (CTR, CVR 등)</div>
+                            <div class="highlight-box" id="mde-preview"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="step-label" for="mde-mode">이 지표를 얼마나 개선하고 싶으신가요?</label>
+                            <select id="mde-mode">
+                                <option value="relative" selected>상대 개선율 (%)</option>
+                                <option value="absolute">절대 개선폭 (%p)</option>
+                            </select>
+
+                            <div class="mde-buttons" id="mde-buttons"></div>
+
+                            <div class="input-with-unit">
+                                <input type="number" id="prop-mde" placeholder="예: 5" min="0" step="0.0001" required>
+                                <span class="unit" id="mde-unit">%</span>
+                            </div>
+                            <div class="help-text" id="mde-help">상대 개선율 기준으로 목표를 입력하세요.</div>
+                            <div class="comparison-box" id="mde-comparison"></div>
+                        </div>
+                    </div>
+
+                    <div class="subsection-divider">
+                        <span>고급 설정</span>
+                    </div>
+
+                    <div class="collapsible">
+                        <div class="collapsible-header" id="advanced-toggle" role="button" aria-expanded="false" aria-controls="advanced-content">
+                            <span>⚙️ 고급 설정</span>
+                            <span class="collapsible-arrow" aria-hidden="true">⌃</span>
+                        </div>
+                        <div class="collapsible-content" id="advanced-content">
+                            <div class="inline-row">
+                                <div class="form-group">
+                                    <label for="confidence-level">신뢰도 (Confidence)</label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="confidence-level" value="95" min="50" max="99.9" step="0.1">
+                                        <span class="unit">%</span>
+                                    </div>
+                                    <div class="help-text">일반적으로 95%를 사용합니다 (양측 검정).</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="power-level">검정력 (Power)</label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="power-level" value="80" min="50" max="99.9" step="0.1">
+                                        <span class="unit">%</span>
+                                    </div>
+                                    <div class="help-text">일반적으로 80%를 사용합니다.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-row">
+                    <button type="submit" class="calculate-btn">계산하기</button>
+                    <button type="reset" class="reset-btn" id="reset-form">초기화</button>
+                </div>
+            </form>
+
+                            <div class="results" id="results">
+                <div class="result-section result-hero">
+                    <h3>🧮 총 필요 샘플</h3>
+                    <div class="result-main" id="result-total-required-main">-</div>
+                    <div class="result-label" id="result-total-required-meta">-</div>
+                </div>
+
+                <div class="result-section">
+                    <h3>🎰 필요 슬롯 환산</h3>
+                    <div class="result-main" id="result-slot-range">-</div>
+                    <div class="result-label" id="result-slot-percentage">-</div>
+                    <div class="result-label" id="result-slot-meta">-</div>
+                </div>
+
+                <div class="result-section">
+                    <div class="result-grid">
+                        <div class="result-card">
+                            <div class="result-card-label">예상 고유 유저</div>
+                            <div class="result-card-value" id="result-available-users">-</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-card-label">실험 기간</div>
+                            <div class="result-card-value" id="result-duration">-</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-card-label">배분</div>
+                            <div class="result-card-value" id="result-allocation">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <h3>📝 계산 결과 보고서</h3>
+                    <div class="result-report" id="result-report">-</div>
+                </div>
+
+                <div class="result-actions">
+                    <button type="button" class="copy-btn" id="copy-result-btn">
+                        <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M8 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3H8zm0 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"></path>
+                            <path d="M5 8a1 1 0 0 0-1 1v9a3 3 0 0 0 3 3h9a1 1 0 1 0 0-2H7a1 1 0 0 1-1-1V9a1 1 0 0 0-1-1z"></path>
+                        </svg>
+                        <span>결과 복사</span>
+                    </button>
+                </div>
+                            </div>
+                        </div>
+                        <aside class="guide-pane" id="guide-pane">
+                            <div class="guide-panel" id="guide-panel-content"></div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Built by <a href="mailto:zonetwo.project@gmail.com">zonetwo.project</a> |
+            <a href="https://github.com/zonetwoproject/ab-test-calculator" target="_blank">GitHub</a>
+        </div>
+    </div>
+
+    <script type="module">
+const TOTAL_SLOTS = 10000;
+
+const PRESET_MDE = {
+  relative: [5, 10, 15, 20],
+  absolute: [0.1, 0.2, 0.5, 1.0],
+};
+
+const FIXED_K_META = {
+  k: 1,
+  message: 'K값은 1로 고정됩니다.',
+};
+
+function normalCdfInverse(p) {
+  if (p <= 0) return -Infinity;
+  if (p >= 1) return Infinity;
+  if (p === 0.5) return 0;
+
+  const a = [
+    -3.969683028665376e1,
+    2.209460984245205e2,
+    -2.759285104469687e2,
+    1.38357751867269e2,
+    -3.066479806614716e1,
+    2.506628277459239,
+  ];
+  const b = [
+    -5.447609879822406e1,
+    1.615858368580409e2,
+    -1.556989798598866e2,
+    6.680131188771972e1,
+    -1.328068155288572e1,
+  ];
+  const c = [
+    -7.784894002430293e-3,
+    -3.223964580411365e-1,
+    -2.400758277161838,
+    -2.549732539343734,
+    4.374664141464968,
+    2.938163982698783,
+  ];
+  const d = [
+    7.784695709041462e-3,
+    3.224671290700398e-1,
+    2.445134137142996,
+    3.754408661907416,
+  ];
+
+  const pLow = 0.02425;
+  const pHigh = 1 - pLow;
+
+  let q;
+  let r;
+
+  if (p < pLow) {
+    q = Math.sqrt(-2 * Math.log(p));
+    return (
+      (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+      ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1)
+    );
+  }
+
+  if (p <= pHigh) {
+    q = p - 0.5;
+    r = q * q;
+    return (
+      ((((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q) /
+      (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1)
+    );
+  }
+
+  q = Math.sqrt(-2 * Math.log(1 - p));
+  return (
+    -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+    ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1)
+  );
+}
+
+function formatNumber(value) {
+  if (!Number.isFinite(value)) {
+    return '-';
+  }
+  return Math.round(value).toLocaleString('ko-KR');
+}
+
+function getDefaultRatios(groupCount) {
+  const base = Math.floor(100 / groupCount);
+  const values = Array(groupCount).fill(base);
+  let remaining = 100 - base * groupCount;
+  let idx = 0;
+  while (remaining > 0) {
+    values[idx] += 1;
+    remaining -= 1;
+    idx += 1;
+  }
+  return values;
+}
+
+function parseGroupRatios(text, groupCount) {
+  const tokens = text
+    .split(/[\s,]+/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+
+  if (tokens.length !== groupCount) {
+    throw new Error(`그룹 수(${groupCount})와 비중 개수가 다릅니다.`);
+  }
+
+  const values = tokens.map((token) => Number(token));
+  if (values.some((num) => !Number.isFinite(num) || num <= 0)) {
+    throw new Error('그룹 비중은 0보다 큰 숫자여야 합니다.');
+  }
+
+  const sum = values.reduce((acc, cur) => acc + cur, 0);
+  if (Math.abs(sum - 100) > 0.01) {
+    throw new Error(`그룹 비중 합계는 100이어야 합니다. 현재 ${sum.toFixed(2)}입니다.`);
+  }
+
+  const ratios = values.map((value) => value / sum);
+  return { values, ratios };
+}
+
+function distributeByRatios(total, ratios) {
+  if (!Number.isFinite(total)) {
+    return ratios.map(() => Number.POSITIVE_INFINITY);
+  }
+
+  const raw = ratios.map((ratio) => ratio * total);
+  const floors = raw.map((value) => Math.floor(value));
+  let remaining = total - floors.reduce((acc, cur) => acc + cur, 0);
+
+  const order = raw
+    .map((value, idx) => ({ idx, frac: value - floors[idx] }))
+    .sort((a, b) => b.frac - a.frac)
+    .map((item) => item.idx);
+
+  let pointer = 0;
+  while (remaining > 0 && order.length > 0) {
+    floors[order[pointer % order.length]] += 1;
+    pointer += 1;
+    remaining -= 1;
+  }
+
+  return floors;
+}
+
+function getZScores(confidencePct, powerPct) {
+  const alpha = 1 - confidencePct / 100;
+  const power = powerPct / 100;
+
+  const zAlpha = normalCdfInverse(1 - alpha / 2);
+  const zBeta = normalCdfInverse(power);
+
+  if (!Number.isFinite(zAlpha) || !Number.isFinite(zBeta)) {
+    throw new Error('신뢰도/검정력 값으로 Z-score를 계산하지 못했습니다.');
+  }
+
+  return { zAlpha, zBeta };
+}
+
+function calculateRequiredTotalUsers(p1, relativeEffect, controlRatio, treatmentRatios, zAlpha, zBeta) {
+  const p2 = p1 * (1 + relativeEffect);
+  if (p2 <= p1 || p2 >= 1) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const zSumSq = Math.pow(zAlpha + zBeta, 2);
+  let maxTotalUsers = 0;
+
+  for (const treatmentRatio of treatmentRatios) {
+    const kappa = treatmentRatio / controlRatio;
+    const nControl =
+      (zSumSq * (p1 * (1 - p1) + p2 * (1 - p2) / kappa)) /
+      Math.pow(p2 - p1, 2);
+
+    const totalUsersForPair = nControl / controlRatio;
+    if (totalUsersForPair > maxTotalUsers) {
+      maxTotalUsers = totalUsersForPair;
+    }
+  }
+
+  return maxTotalUsers;
+}
+
+function calculateDetectableMde(availableUsers, baselinePct, controlRatio, treatmentRatios, confidencePct, powerPct) {
+  if (!Number.isFinite(availableUsers) || availableUsers <= 0) {
+    return null;
+  }
+
+  const p1 = baselinePct / 100;
+  if (p1 <= 0 || p1 >= 1) {
+    return null;
+  }
+
+  let zAlpha;
+  let zBeta;
+  try {
+    ({ zAlpha, zBeta } = getZScores(confidencePct, powerPct));
+  } catch {
+    return null;
+  }
+
+  const maxRelative = Math.min(3, ((1 - p1) / p1) * 0.999);
+  if (!Number.isFinite(maxRelative) || maxRelative <= 0.0001) {
+    return null;
+  }
+
+  let low = 0.0001;
+  let high = maxRelative;
+  let best = null;
+
+  for (let i = 0; i < 60 && high - low > 0.000001; i += 1) {
+    const mid = (low + high) / 2;
+    const requiredUsers = calculateRequiredTotalUsers(p1, mid, controlRatio, treatmentRatios, zAlpha, zBeta);
+
+    if (requiredUsers <= availableUsers) {
+      best = mid;
+      high = mid;
+    } else {
+      low = mid;
+    }
+  }
+
+  if (best === null) {
+    return null;
+  }
+
+  return {
+    relativePct: best * 100,
+    absolutePctPoint: p1 * best * 100,
+  };
+}
+
+function validateBaseFormData(formData, ratioMeta) {
+  if (!Number.isFinite(formData.duration) || formData.duration < 1) {
+    throw new Error('실험 기간을 1일 이상 입력해주세요.');
+  }
+  if (!Number.isFinite(formData.dailyVisitors) || formData.dailyVisitors < 1) {
+    throw new Error('하루 방문수를 1 이상 입력해주세요.');
+  }
+  if (!Number.isFinite(formData.baselinePct) || formData.baselinePct <= 0 || formData.baselinePct >= 100) {
+    throw new Error('현재 지표는 0~100 사이 값으로 입력해주세요.');
+  }
+  if (!Number.isFinite(formData.confidencePct) || formData.confidencePct <= 50 || formData.confidencePct >= 100) {
+    throw new Error('신뢰도는 50 초과 100 미만으로 입력해주세요.');
+  }
+  if (!Number.isFinite(formData.powerPct) || formData.powerPct <= 50 || formData.powerPct >= 100) {
+    throw new Error('검정력은 50 초과 100 미만으로 입력해주세요.');
+  }
+  if (!ratioMeta || !ratioMeta.ratios || ratioMeta.ratios.length !== formData.groupCount) {
+    throw new Error('그룹 비중 설정을 확인해주세요.');
+  }
+
+  const controlRatio = ratioMeta.ratios[0];
+  if (controlRatio <= 0) {
+    throw new Error('대조군 비중은 0보다 커야 합니다.');
+  }
+}
+
+function validateFormData(formData, ratioMeta) {
+  validateBaseFormData(formData, ratioMeta);
+
+  if (!Number.isFinite(formData.mdeInput) || formData.mdeInput <= 0) {
+    throw new Error('개선 목표는 0보다 큰 값이어야 합니다.');
+  }
+  if (formData.mdeMode === 'absolute' && formData.baselinePct + formData.mdeInput >= 100) {
+    throw new Error('절대 개선폭은 baseline과 합쳐 100% 미만이어야 합니다.');
+  }
+}
+
+function calculateExperiment(formData, ratioMeta) {
+  const controlRatio = ratioMeta.ratios[0];
+  const treatmentRatios = ratioMeta.ratios.slice(1);
+  const p1 = formData.baselinePct / 100;
+
+  const relativeEffect = formData.mdeMode === 'relative'
+    ? formData.mdeInput / 100
+    : formData.mdeInput / formData.baselinePct;
+
+  const { zAlpha, zBeta } = getZScores(formData.confidencePct, formData.powerPct);
+
+  const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
+  const availableUsers = totalUniqueUsers;
+
+  const requiredTotalRaw = calculateRequiredTotalUsers(p1, relativeEffect, controlRatio, treatmentRatios, zAlpha, zBeta);
+  const requiredTotal = Math.ceil(requiredTotalRaw);
+
+  const sampleCounts = distributeByRatios(requiredTotal, ratioMeta.ratios);
+
+  const usersPerSlot = availableUsers / TOTAL_SLOTS;
+  const requiredSlots = usersPerSlot > 0 ? Math.ceil(requiredTotal / usersPerSlot) : Number.POSITIVE_INFINITY;
+  const slotUsagePct = Number.isFinite(requiredSlots)
+    ? (requiredSlots / TOTAL_SLOTS) * 100
+    : Number.POSITIVE_INFINITY;
+
+  return {
+    totalUniqueUsers,
+    availableUsers,
+    requiredTotal,
+    sampleCounts,
+    requiredSlots,
+    slotUsagePct,
+    relativeEffectPct: relativeEffect * 100,
+    absoluteEffectPctPoint: p1 * relativeEffect * 100,
+  };
+}
+
+
+        const CONFIG = {
+            TOTAL_SLOTS,
+            PRESET_MDE
+        };
+
+        const GUIDE_CONTENT = Object.freeze({
+            introTitle: '실험 계산기란?',
+            introText: '동일 지면에서 여러 실험을 진행할 때 샘플이 겹치지 않도록 슬롯을 나눠 사용하세요. 실험 기간과 방문 수를 입력하면 권장 슬롯 수를 자동으로 계산합니다.',
+            inputItems: [
+                {
+                    icon: '🧪',
+                    title: '실험 기간은 며칠인가요?',
+                    description: '실험 기간은 1일 이상 입력하세요. 요일 효과를 반영하려면 최소 7일, 안정적인 결과를 위해 14일 이상을 권장합니다.'
+                },
+                {
+                    icon: '🎯',
+                    title: '배분 비율을 선택하세요',
+                    description: '첫 번째 값은 대조군입니다. 쉼표로 구분하고 합계가 100이 되도록 입력하세요.'
+                },
+                {
+                    icon: '📊',
+                    title: '목표 지표의 현재 수준은 어떤가요?',
+                    description: '목표 지표의 최근 일평균 값을 입력하세요. (CTR, CVR 등) 이 값이 MDE 프리뷰 계산의 기준이 됩니다.'
+                },
+                {
+                    icon: 'ℹ️',
+                    title: '이 지표를 얼마나 개선하고 싶으신가요?',
+                    description: '상대 개선율(%) 또는 절대 개선폭(%p)으로 목표를 입력하세요.'
+                }
+            ],
+            formulas: [
+                {
+                    title: '고유 유저 수',
+                    description: '일평균 방문자 수와 실험 기간을 곱해 예상 고유 유저 수를 계산합니다.',
+                    equation: '예상 고유 유저 수 = 반올림(일평균 방문자 수 × 실험 기간)',
+                    code: 'totalUniqueUsers = round(dailyVisitors * duration)'
+                },
+                {
+                    title: '개선 목표 변환',
+                    description: '입력 방식(상대/절대)에 따라 계산용 개선율을 통일합니다.',
+                    equation: '상대 개선율 입력 시\n개선율 = 입력값 / 100\n실험군 예상 지표 = 현재 지표 × (1 + 개선율)\n\n절대 개선폭(%p) 입력 시\n실험군 예상 지표 = 현재 지표 + 입력값(%p)\n내부 계산용 개선율 = 입력값 / 현재 지표(%)',
+                    code: 'relativeEffect = (relative mode) ? (mdeInput / 100) : (mdeInput / baselinePct)\np2 = p1 * (1 + relativeEffect)\nabsoluteEffectPctPoint = p1 * relativeEffect * 100'
+                },
+                {
+                    title: '필요 샘플 수 (다중 그룹)',
+                    description: '각 실험군이 대조군과 비교될 때 필요한 샘플을 계산하고,\n그중 가장 큰 값을 전체 필요 샘플로 사용합니다.',
+                    equation: '실험군 i의 배분비(κi) = 실험군 i 비중 / 대조군 비중\n대조군 필요 샘플(ni) = (zα + zβ)^2 × [ p1(1-p1) + p2(1-p2)/κi ] / (p2-p1)^2\n해당 조합 총 필요 샘플 = ni / 대조군 비중\n최종 총 필요 샘플 수 = 올림(각 조합 총 필요 샘플 중 최대값)',
+                    code: 'kappa_i = treatmentRatio_i / controlRatio\nnControl_i = ((zAlpha + zBeta)^2 * (p1*(1-p1) + p2*(1-p2)/kappa_i)) / (p2 - p1)^2\ntotalForPair_i = nControl_i / controlRatio\nrequiredTotal = ceil(max(totalForPair_i))'
+                },
+                {
+                    title: '슬롯 계산',
+                    description: '예상 고유 유저 수를 10,000개 슬롯 기준으로 환산해\n필요한 슬롯 수를 계산합니다.',
+                    equation: '슬롯당 유저 수 = 예상 고유 유저 수 / 10,000\n필요 슬롯 수 = 올림(총 필요 샘플 수 / 슬롯당 유저 수)\n슬롯 사용률(%) = 필요 슬롯 수 / 10,000 × 100',
+                    code: 'usersPerSlot = availableUsers / 10000\nrequiredSlots = ceil(requiredTotal / usersPerSlot)\nslotUsagePct = (requiredSlots / 10000) * 100'
+                },
+                {
+                    title: 'MDE 역산',
+                    description: '현재 조건에서 검증 가능한 최소 개선율을 찾기 위해,\n개선율을 가정하고 샘플 수를 비교하면서 범위를 반복적으로 줄입니다.',
+                    equation: '1) 개선율 r 가정 → p2 계산\n2) 해당 r의 필요 샘플 계산\n3) 필요 샘플 > 예상 고유 유저 수면 r 증가\n4) 필요 샘플 ≤ 예상 고유 유저 수면 r 감소\n5) 이 과정을 반복해 최소 r 확정 (최대 60회)\n\n최종 MDE(상대 %) = r * 100\n최종 MDE(절대 %p) = p1 * r * 100',
+                    code: 'low = 0.0001\nhigh = min(3, ((1 - p1) / p1) * 0.999)\nfor up to 60 iterations:\n  mid = (low + high) / 2\n  required = requiredUsers(mid)\n  if required <= availableUsers: high = mid\n  else: low = mid'
+                }
+            ],
+            footerTitle: 'A/B 테스트 계산기 Mark11',
+            footerSub: 'v11 · 2026'
+        });
+
+        let latestResultSummary = '';
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function toMultilineHtml(value) {
+            return escapeHtml(value).replace(/\n/g, '<br>');
+        }
+
+        function renderGuidePanel() {
+            const panel = document.getElementById('guide-panel-content');
+            if (!panel) {
+                return;
+            }
+
+            const itemHtml = GUIDE_CONTENT.inputItems
+                .map(({ icon, title, description }) => `
+                    <div class="guide-item">
+                        <span class="guide-item-icon" aria-hidden="true">${icon}</span>
+                        <div class="guide-item-copy">
+                            <div class="guide-item-title">${title}</div>
+                            <div class="guide-item-desc">${description}</div>
+                        </div>
+                    </div>
+                `)
+                .join('');
+
+            const formulaHtml = GUIDE_CONTENT.formulas
+                .map(({ title, description, equation, code }) => `
+                    <div class="guide-formula-card">
+                        <div class="guide-formula-title">${title}</div>
+                        <div class="guide-formula-section">
+                            <div class="guide-formula-desc">${toMultilineHtml(description)}</div>
+                        </div>
+                        <div class="guide-formula-section">
+                            <div class="guide-formula-equation">${toMultilineHtml(equation)}</div>
+                        </div>
+                        <div class="guide-formula-section">
+                            <div class="guide-formula-label">공식(코드)</div>
+                            <div class="guide-formula-code">${toMultilineHtml(code)}</div>
+                        </div>
+                    </div>
+                `)
+                .join('');
+
+            panel.innerHTML = `
+                <div class="guide-intro-card">
+                    <div class="guide-intro-title">${GUIDE_CONTENT.introTitle}</div>
+                    <div class="guide-intro-text">${GUIDE_CONTENT.introText}</div>
+                </div>
+
+                <div class="guide-section-title">입력 항목 안내</div>
+                ${itemHtml}
+
+                <div class="guide-section-title">계산 공식</div>
+                ${formulaHtml}
+
+                <div class="guide-footer">
+                    <div>${GUIDE_CONTENT.footerTitle}</div>
+                    <div>${GUIDE_CONTENT.footerSub}</div>
+                </div>
+            `;
+        }
+
+        function setupResponsiveTabs() {
+            const content = document.querySelector('.content');
+            const buttons = Array.from(document.querySelectorAll('.tab-switcher-btn'));
+            const desktopQuery = window.matchMedia('(min-width: 1200px)');
+
+            if (!content || !buttons.length) {
+                return;
+            }
+
+            const getInitialTab = () => {
+                const queryTab = new URLSearchParams(window.location.search).get('tab');
+                return queryTab === 'guide' ? 'guide' : 'calculator';
+            };
+
+            let currentTab = getInitialTab();
+
+            const applyTabState = (tab, { syncUrl = true } = {}) => {
+                currentTab = tab === 'guide' ? 'guide' : 'calculator';
+                const activeTab = desktopQuery.matches ? 'desktop' : currentTab;
+                content.setAttribute('data-active-tab', activeTab);
+
+                buttons.forEach((button) => {
+                    const selected = button.dataset.tab === currentTab;
+                    button.classList.toggle('active', selected);
+                    button.setAttribute('aria-selected', String(selected));
+                    button.tabIndex = selected ? 0 : -1;
+                });
+
+                if (syncUrl) {
+                    const nextUrl = new URL(window.location.href);
+                    if (currentTab === 'guide') {
+                        nextUrl.searchParams.set('tab', 'guide');
+                    } else {
+                        nextUrl.searchParams.delete('tab');
+                    }
+                    window.history.replaceState({}, '', nextUrl);
+                }
+            };
+
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => applyTabState(button.dataset.tab));
+            });
+
+            const onBreakpointChange = () => {
+                applyTabState(currentTab, { syncUrl: false });
+            };
+
+            if (desktopQuery.addEventListener) {
+                desktopQuery.addEventListener('change', onBreakpointChange);
+            } else {
+                desktopQuery.addListener(onBreakpointChange);
+            }
+
+            window.addEventListener('popstate', () => {
+                applyTabState(getInitialTab(), { syncUrl: false });
+            });
+
+            applyTabState(currentTab, { syncUrl: false });
+        }
+
+        function getFormData() {
+            return {
+                duration: parseInt(document.getElementById('prop-duration').value, 10),
+                dailyVisitors: parseFloat(document.getElementById('prop-daily-visitors').value),
+                                groupCount: parseInt(document.getElementById('group-count').value, 10),
+                groupRatiosText: document.getElementById('group-ratios').value,
+                baselinePct: parseFloat(document.getElementById('prop-baseline').value),
+                mdeMode: document.getElementById('mde-mode').value,
+                mdeInput: parseFloat(document.getElementById('prop-mde').value),
+                confidencePct: parseFloat(document.getElementById('confidence-level').value),
+                powerPct: parseFloat(document.getElementById('power-level').value)
+            };
+        }
+
+        function updateDurationFeedback() {
+            const days = parseInt(document.getElementById('prop-duration').value, 10);
+            const feedback = document.getElementById('duration-feedback');
+            feedback.classList.remove('error', 'muted');
+
+            if (!days || days < 1) {
+                feedback.classList.add('show');
+                feedback.classList.add('error');
+                feedback.textContent = '❌ 1일 이상 입력하세요.';
+                return;
+            }
+
+            feedback.classList.add('show');
+            feedback.classList.add('muted');
+            if (days < 7) {
+                feedback.textContent = `💡 ${days}일은 7일 미만으로 요일 효과가 남을 수 있습니다.`;
+                return;
+            }
+            if (days < 14) {
+                feedback.textContent = `✅ ${days}일은 가능하지만, 14일 이상이 더 안정적입니다.`;
+                return;
+            }
+            feedback.textContent = `✅ ${days}일은 요일 효과를 제거하기에 충분한 기간입니다.`;
+        }
+
+        function updateVisitorsFeedback() {
+            const visitorInput = document.getElementById('prop-daily-visitors');
+            const rawValue = visitorInput.value.trim();
+            const visitors = parseFloat(rawValue);
+            const feedback = document.getElementById('visitors-feedback');
+            feedback.classList.remove('error', 'muted');
+
+            if (!rawValue) {
+                feedback.classList.remove('show');
+                return;
+            }
+
+            if (!Number.isFinite(visitors) || visitors < 1) {
+                feedback.classList.add('show');
+                feedback.classList.add('error');
+                feedback.textContent = '❌ 1명 이상 입력하세요.';
+                return;
+            }
+
+            if (visitors < 1000) {
+                feedback.classList.add('show');
+                feedback.classList.add('muted');
+                feedback.textContent = '💡 트래픽이 낮아 실험 기간이 길어질 수 있습니다.';
+                return;
+            }
+
+            feedback.classList.remove('show');
+        }
+
+        function updateUniqueUsersPreview() {
+            const previewBox = document.getElementById('preview-users');
+            const formData = getFormData();
+
+            if (!formData.duration || !formData.dailyVisitors) {
+                previewBox.style.display = 'none';
+                return;
+            }
+
+            try {
+                const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
+                const availableUsers = totalUniqueUsers;
+
+                previewBox.style.display = 'block';
+                previewBox.innerHTML = `
+                    <strong>💡 예상 고유 유저: 약 ${formatNumber(totalUniqueUsers)}명</strong><br>
+                    <span class="preview-meta">
+                        계산: ${formatNumber(formData.dailyVisitors)} × ${formData.duration}일
+                    </span>
+                `;
+            } catch {
+                previewBox.style.display = 'none';
+            }
+        }
+
+        function updateRatioFeedback() {
+            const groupCount = parseInt(document.getElementById('group-count').value, 10);
+            const feedback = document.getElementById('ratio-feedback');
+            const autoBalanceButton = document.getElementById('apply-even-ratio-from-input');
+            feedback.classList.remove('error', 'primary');
+            try {
+                const ratioMeta = parseGroupRatios(document.getElementById('group-ratios').value, groupCount);
+                const control = ratioMeta.values[0].toFixed(2).replace(/\.00$/, '');
+                const treatments = ratioMeta.values.slice(1).map((v) => v.toFixed(2).replace(/\.00$/, '')).join(' / ');
+                feedback.classList.add('show');
+                feedback.classList.add('primary');
+                feedback.textContent = `대조군 ${control}% | 실험군 ${treatments}%`;
+                autoBalanceButton.classList.add('is-hidden');
+            } catch (error) {
+                feedback.classList.add('show');
+                feedback.classList.add('error');
+                feedback.textContent = error.message;
+                const shouldShowAutoBalance = typeof error?.message === 'string'
+                    && (error.message.includes('합계는 100') || error.message.includes('그룹 수('));
+                autoBalanceButton.classList.toggle('is-hidden', !shouldShowAutoBalance);
+            }
+        }
+
+        function updateMdeModeUI() {
+            const mode = document.getElementById('mde-mode').value;
+            const unit = document.getElementById('mde-unit');
+            const help = document.getElementById('mde-help');
+            const input = document.getElementById('prop-mde');
+            const buttonWrap = document.getElementById('mde-buttons');
+            const values = CONFIG.PRESET_MDE[mode];
+
+            if (mode === 'relative') {
+                unit.textContent = '%';
+                help.textContent = '상대 개선율 기준으로 목표를 입력하세요.';
+                input.step = '0.0001';
+                input.min = '0';
+                input.placeholder = '예: 5';
+            } else {
+                unit.textContent = '%p';
+                help.textContent = '절대 개선폭(%p) 기준으로 목표를 입력하세요. 예: 0.2%p';
+                input.step = '0.0001';
+                input.min = '0';
+                input.placeholder = '예: 0.2';
+            }
+
+            buttonWrap.innerHTML = values
+                .map((value) => {
+                    const label = mode === 'relative' ? `+${value}%` : `+${value}%p`;
+                    return `<button type="button" class="mde-btn" data-value="${value}">${label}</button>`;
+                })
+                .join('');
+
+            const currentValue = Number(input.value);
+            document.querySelectorAll('.mde-btn').forEach((button) => {
+                if (Number(button.dataset.value) === currentValue) {
+                    button.classList.add('active');
+                }
+                button.addEventListener('click', () => {
+                    document.getElementById('prop-mde').value = button.dataset.value;
+                    document.querySelectorAll('.mde-btn').forEach((btn) => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    updateMdePreview();
+                    updateMdeComparison();
+                });
+            });
+        }
+
+        function getPreviewContext() {
+            const formData = getFormData();
+            const ratioMeta = parseGroupRatios(formData.groupRatiosText, formData.groupCount);
+            validateBaseFormData(formData, ratioMeta);
+
+            const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
+            const availableUsers = totalUniqueUsers;
+
+            return {
+                formData,
+                ratioMeta,
+                totalUniqueUsers,
+                availableUsers
+            };
+        }
+
+        function updateMdePreview() {
+            const previewBox = document.getElementById('mde-preview');
+            const formData = getFormData();
+
+            if (!Number.isFinite(formData.baselinePct)) {
+                previewBox.style.display = 'none';
+                return;
+            }
+
+            previewBox.style.display = 'block';
+
+            if (formData.baselinePct <= 0 || formData.baselinePct >= 100) {
+                previewBox.innerHTML = '❌ 현재 지표는 0 초과 100 미만으로 입력해주세요.';
+                return;
+            }
+
+            try {
+                const ratioMeta = parseGroupRatios(formData.groupRatiosText, formData.groupCount);
+                const hasRequiredContext = Number.isFinite(formData.duration) && formData.duration >= 1
+                    && Number.isFinite(formData.dailyVisitors) && formData.dailyVisitors >= 1
+                    && Number.isFinite(formData.confidencePct) && formData.confidencePct > 50 && formData.confidencePct < 100
+                    && Number.isFinite(formData.powerPct) && formData.powerPct > 50 && formData.powerPct < 100;
+
+                if (!hasRequiredContext) {
+                    previewBox.innerHTML = '💡 현재 지표가 입력되었습니다. 실험 기간/하루 방문 수를 입력하면 최소 효과를 계산합니다.';
+                    return;
+                }
+
+                const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
+                const availableUsers = totalUniqueUsers;
+
+                const detectable = calculateDetectableMde(
+                    availableUsers,
+                    formData.baselinePct,
+                    ratioMeta.ratios[0],
+                    ratioMeta.ratios.slice(1),
+                    formData.confidencePct,
+                    formData.powerPct
+                );
+
+                if (!detectable) {
+                    previewBox.innerHTML = '❌ 현재 입력값으로 최소 감지 효과를 계산할 수 없습니다.';
+                    return;
+                }
+
+                const newValue = formData.baselinePct + detectable.absolutePctPoint;
+                previewBox.innerHTML = `
+                    🎯 현재 조건에서 검증 가능한 최소 효과<br>
+                    <strong>상대 ${detectable.relativePct.toFixed(4)}%</strong> / 절대 ${detectable.absolutePctPoint.toFixed(3)}%p<br>
+                    기준 ${formData.baselinePct.toFixed(2)}% → ${newValue.toFixed(2)}%
+                `;
+            } catch (error) {
+                previewBox.innerHTML = `❌ ${error.message}`;
+            }
+        }
+
+        function updateMdeComparison() {
+            const comparisonBox = document.getElementById('mde-comparison');
+
+            try {
+                const { formData, ratioMeta } = getPreviewContext();
+                if (!formData.mdeInput || !formData.baselinePct) {
+                    comparisonBox.className = 'comparison-box';
+                    return;
+                }
+                validateFormData(formData, ratioMeta);
+
+                const totalUniqueUsers = Math.round(formData.dailyVisitors * formData.duration);
+                const availableUsers = totalUniqueUsers;
+                const detectable = calculateDetectableMde(
+                    availableUsers,
+                    formData.baselinePct,
+                    ratioMeta.ratios[0],
+                    ratioMeta.ratios.slice(1),
+                    formData.confidencePct,
+                    formData.powerPct
+                );
+
+                if (!detectable) {
+                    comparisonBox.className = 'comparison-box';
+                    return;
+                }
+
+                const targetRelative = formData.mdeMode === 'relative'
+                    ? formData.mdeInput
+                    : (formData.mdeInput / formData.baselinePct) * 100;
+
+                if (!Number.isFinite(targetRelative) || targetRelative <= 0) {
+                    comparisonBox.className = 'comparison-box';
+                    return;
+                }
+
+                const baselineText = `${formData.baselinePct.toFixed(2)}%`;
+                const targetValue = formData.mdeMode === 'relative'
+                    ? formData.baselinePct * (1 + formData.mdeInput / 100)
+                    : formData.baselinePct + formData.mdeInput;
+                const targetMetricText = `${targetValue.toFixed(2)}%`;
+                const targetModeText = formData.mdeMode === 'relative'
+                    ? `상대 ${formData.mdeInput.toFixed(2)}%`
+                    : `절대 ${formData.mdeInput.toFixed(3)}%p`;
+                const targetSummary = `현재 ${baselineText} 기준 ${targetModeText}를 입력하면 목표 지표는 ${targetMetricText}입니다.`;
+
+                if (targetRelative >= detectable.relativePct) {
+                    comparisonBox.className = 'comparison-box success';
+                    comparisonBox.innerHTML = `
+                        ${targetSummary}<br>
+                        목표(${targetRelative.toFixed(2)}%)는 검증 가능합니다.
+                    `;
+                    return;
+                }
+
+                const durationCandidates = [14, 21, 30];
+                let suggestions = '';
+                for (const days of durationCandidates) {
+                    if (days <= formData.duration) {
+                        continue;
+                    }
+                    const futureTotal = Math.round(formData.dailyVisitors * days);
+                    const futureAvailable = futureTotal;
+                    const futureDetectable = calculateDetectableMde(
+                        futureAvailable,
+                        formData.baselinePct,
+                        ratioMeta.ratios[0],
+                        ratioMeta.ratios.slice(1),
+                        formData.confidencePct,
+                        formData.powerPct
+                    );
+                    if (futureDetectable && futureDetectable.relativePct <= targetRelative) {
+                        suggestions += `• <button type="button" class="chip-btn" onclick="applySuggestedDuration(${days})">${days}일로 재계산</button> → 최소 ${futureDetectable.relativePct.toFixed(4)}%<br>`;
+                    }
+                }
+
+                comparisonBox.className = 'comparison-box error';
+                comparisonBox.innerHTML = `
+                    ${targetSummary}<br>
+                    목표(${targetRelative.toFixed(2)}%)는 현재 설정에서 검증이 어렵습니다.<br>
+                    <div class="comparison-suggestions">${suggestions || '권장: 기간 연장 또는 일평균 방문 수 증가를 검토하세요.'}</div>
+                `;
+            } catch {
+                comparisonBox.className = 'comparison-box';
+            }
+        }
+
+        function displayResults(result, ratioMeta, formData) {
+            document.getElementById('result-available-users').textContent = formatNumber(result.availableUsers) + '명';
+            document.getElementById('result-duration').textContent = `${formData.duration}일`;
+            document.getElementById('result-allocation').textContent = ratioMeta.values
+                .map((value) => value.toFixed(2).replace(/\.00$/, ''))
+                .join(':');
+
+            const requiredTotalText = Number.isFinite(result.requiredTotal)
+                ? `${formatNumber(result.requiredTotal)}명`
+                : '계산 불가';
+            document.getElementById('result-total-required-main').textContent = requiredTotalText;
+
+            const formatPctInput = (value) => value.toFixed(4).replace(/\.?0+$/, '');
+            const baselineText = `${formatPctInput(formData.baselinePct)}%`;
+            const targetValue = formData.mdeMode === 'relative'
+                ? formData.baselinePct * (1 + formData.mdeInput / 100)
+                : formData.baselinePct + formData.mdeInput;
+            const targetText = `${targetValue.toFixed(2)}%`;
+            const improvementText = formData.mdeMode === 'relative'
+                ? `${formatPctInput(formData.mdeInput)}% (${baselineText} → ${targetText})`
+                : `${formatPctInput(formData.mdeInput)}%p (${baselineText} → ${targetText})`;
+            const sampleMetaText = `계산 변수: 기준 지표 ${baselineText}, 목표 지표 ${targetText}, 그룹 비율 ${ratioMeta.values.map((value) => value.toFixed(2).replace(/\.00$/, '')).join(':')}, 신뢰도 ${formData.confidencePct.toFixed(1)}%, 검정력 ${formData.powerPct.toFixed(1)}%`;
+            document.getElementById('result-total-required-meta').textContent = sampleMetaText;
+
+            const slotCountText = Number.isFinite(result.requiredSlots)
+                ? `${formatNumber(result.requiredSlots)}개`
+                : '계산 불가';
+            document.getElementById('result-slot-range').textContent = slotCountText;
+
+            const slotUsageText = Number.isFinite(result.slotUsagePct)
+                ? `전체 슬롯의 ${result.slotUsagePct.toFixed(2)}%`
+                : '슬롯 사용률 계산 불가';
+            document.getElementById('result-slot-percentage').textContent = slotUsageText;
+
+            const usersPerSlot = Number.isFinite(result.availableUsers)
+                ? result.availableUsers / TOTAL_SLOTS
+                : NaN;
+            const slotMetaText = Number.isFinite(result.requiredSlots) && Number.isFinite(usersPerSlot)
+                ? `계산 변수: 총 필요 샘플 ${formatNumber(result.requiredTotal)}명 ÷ 슬롯당 ${usersPerSlot.toFixed(2)}명 (예상 고유 유저 ${formatNumber(result.availableUsers)}명 ÷ ${formatNumber(TOTAL_SLOTS)} 슬롯)`
+                : '계산 변수: 총 필요 샘플, 예상 고유 유저 수, 슬롯당 유저 수';
+            document.getElementById('result-slot-meta').textContent = slotMetaText;
+
+            const roundedRatios = ratioMeta.values.map((value) => Math.round(value));
+            const allocationText = roundedRatios.length === 2
+                ? `대조군(${roundedRatios[0]}%) : 실험군(${roundedRatios[1]}%)`
+                : roundedRatios.map((value, idx) => `그룹${idx + 1}(${value}%)`).join(' : ');
+
+            const detectable = calculateDetectableMde(
+                result.availableUsers,
+                formData.baselinePct,
+                ratioMeta.ratios[0],
+                ratioMeta.ratios.slice(1),
+                formData.confidencePct,
+                formData.powerPct
+            );
+            const targetRelative = formData.mdeMode === 'relative'
+                ? formData.mdeInput
+                : (formData.mdeInput / formData.baselinePct) * 100;
+            const mdeText = detectable ? `${detectable.relativePct.toFixed(4)}% (상대)` : '계산 불가';
+            let verdictText = '계산 불가';
+            if (detectable) {
+                verdictText = targetRelative >= detectable.relativePct ? '검증 가능' : '검증 어려움';
+            }
+            const reportText =
+                `🧾 입력 요약\n` +
+                `- 실험 기간: ${formData.duration}일\n` +
+                `- 일평균 방문자 수: ${formatNumber(formData.dailyVisitors)}명\n` +
+                `- 예상 고유 유저 수: ${formatNumber(result.availableUsers)}명\n` +
+                `- 실험 그룹 배분: ${allocationText}\n\n` +
+                `🎯 지표 및 검증 가능성\n` +
+                `- 기준 지표: ${baselineText}\n` +
+                `- 목표 개선: ${improvementText}\n` +
+                `- 현재 최소 감지 가능 개선(MDE): ${mdeText}\n` +
+                `- 판정: ${verdictText}\n\n` +
+                `🎰 샘플/슬롯 결과\n` +
+                `- 총 필요 샘플 수: ${formatNumber(result.requiredTotal)}명\n` +
+                `  · 계산 변수: 기준 지표 ${baselineText}, 목표 지표 ${targetText}, 그룹 비율 ${ratioMeta.values.map((value) => value.toFixed(2).replace(/\.00$/, '')).join(':')}, 신뢰도 ${formData.confidencePct.toFixed(1)}%, 검정력 ${formData.powerPct.toFixed(1)}%\n` +
+                `- 필요 슬롯 수: ${slotCountText}\n` +
+                `  · 계산 변수: 총 필요 샘플 ${formatNumber(result.requiredTotal)}명, 예상 고유 유저 ${formatNumber(result.availableUsers)}명, 슬롯당 유저 수 ${Number.isFinite(usersPerSlot) ? usersPerSlot.toFixed(2) + '명' : '계산 불가'}\n` +
+                `- 슬롯 사용률: ${Number.isFinite(result.slotUsagePct) ? result.slotUsagePct.toFixed(2) + '%' : '계산 불가'}`;
+
+            document.getElementById('result-report').textContent = reportText;
+            latestResultSummary = reportText;
+
+            document.getElementById('results').classList.add('show');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function applyEvenRatios() {
+            const groupCount = parseInt(document.getElementById('group-count').value, 10);
+            const values = getDefaultRatios(groupCount);
+            document.getElementById('group-ratios').value = values.join(',');
+            updateRatioFeedback();
+            updateMdePreview();
+            updateMdeComparison();
+        }
+
+        function getRatioTokenCount() {
+            return document.getElementById('group-ratios').value
+                .split(/[\s,]+/)
+                .map((value) => value.trim())
+                .filter(Boolean).length;
+        }
+
+        function syncGroupCountFromRatiosInput() {
+            const groupCountSelect = document.getElementById('group-count');
+            const tokenCount = getRatioTokenCount();
+
+            if (!tokenCount) {
+                return;
+            }
+
+            const matchedOption = Array.from(groupCountSelect.options).some(
+                (option) => Number(option.value) === tokenCount
+            );
+            if (!matchedOption) {
+                return;
+            }
+
+            if (parseInt(groupCountSelect.value, 10) !== tokenCount) {
+                groupCountSelect.value = String(tokenCount);
+            }
+        }
+
+        function applyEvenRatiosFromInputTokens() {
+            const groupCountSelect = document.getElementById('group-count');
+            const tokenCount = getRatioTokenCount();
+            const feedback = document.getElementById('ratio-feedback');
+
+            if (!tokenCount) {
+                feedback.classList.remove('primary');
+                feedback.classList.add('show');
+                feedback.classList.add('error');
+                feedback.textContent = '쉼표로 구분된 그룹 비중을 먼저 입력하세요.';
+                return;
+            }
+
+            const matchedOption = Array.from(groupCountSelect.options).some(
+                (option) => Number(option.value) === tokenCount
+            );
+
+            if (!matchedOption) {
+                feedback.classList.remove('primary');
+                feedback.classList.add('show');
+                feedback.classList.add('error');
+                feedback.textContent = `그룹 수는 2~5개까지만 지원합니다. 현재 ${tokenCount}개입니다.`;
+                return;
+            }
+
+            groupCountSelect.value = String(tokenCount);
+            applyEvenRatios();
+        }
+
+        window.applySuggestedDuration = function applySuggestedDuration(days) {
+            document.getElementById('prop-duration').value = days;
+            updateDurationFeedback();
+            updateUniqueUsersPreview();
+            updateMdePreview();
+            updateMdeComparison();
+        };
+
+        document.getElementById('advanced-toggle').addEventListener('click', () => {
+            const header = document.getElementById('advanced-toggle');
+            const content = document.getElementById('advanced-content');
+            const isOpen = content.classList.toggle('show');
+            header.classList.toggle('open', isOpen);
+            header.setAttribute('aria-expanded', String(isOpen));
+        });
+
+        document.getElementById('prop-duration').addEventListener('input', () => {
+            updateDurationFeedback();
+            updateUniqueUsersPreview();
+            updateMdePreview();
+            updateMdeComparison();
+        });
+
+        document.getElementById('prop-daily-visitors').addEventListener('input', () => {
+            updateVisitorsFeedback();
+            updateUniqueUsersPreview();
+            updateMdePreview();
+            updateMdeComparison();
+        });
+
+        document.getElementById('group-count').addEventListener('change', () => {
+            applyEvenRatios();
+        });
+
+        document.getElementById('group-ratios').addEventListener('input', () => {
+            syncGroupCountFromRatiosInput();
+            updateRatioFeedback();
+            updateMdePreview();
+            updateMdeComparison();
+        });
+        document.getElementById('apply-even-ratio-from-input').addEventListener('click', applyEvenRatiosFromInputTokens);
+
+        document.getElementById('prop-baseline').addEventListener('input', () => {
+            updateMdePreview();
+            updateMdeComparison();
+        });
+        document.getElementById('prop-mde').addEventListener('input', () => {
+            document.querySelectorAll('.mde-btn').forEach((btn) => {
+                if (btn.dataset.value === document.getElementById('prop-mde').value) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            updateMdeComparison();
+        });
+
+        document.getElementById('mde-mode').addEventListener('change', () => {
+            updateMdeModeUI();
+            updateMdePreview();
+            updateMdeComparison();
+        });
+
+        document.getElementById('confidence-level').addEventListener('input', () => {
+            updateMdePreview();
+            updateMdeComparison();
+        });
+
+        document.getElementById('power-level').addEventListener('input', () => {
+            updateMdePreview();
+            updateMdeComparison();
+        });
+
+        document.getElementById('calculator-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            try {
+                const formData = getFormData();
+                const ratioMeta = parseGroupRatios(formData.groupRatiosText, formData.groupCount);
+
+                validateFormData(formData, ratioMeta);
+
+                const result = calculateExperiment(formData, ratioMeta);
+                displayResults(result, ratioMeta, formData);
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        document.getElementById('calculator-form').addEventListener('reset', () => {
+            setTimeout(() => {
+                document.getElementById('results').classList.remove('show');
+                document.getElementById('result-report').textContent = '-';
+                latestResultSummary = '';
+                updateDurationFeedback();
+                updateVisitorsFeedback();
+                updateMdeModeUI();
+                applyEvenRatios();
+                updateUniqueUsersPreview();
+                updateMdePreview();
+                updateMdeComparison();
+            }, 0);
+        });
+
+        document.getElementById('copy-result-btn').addEventListener('click', async () => {
+            if (!latestResultSummary) {
+                alert('먼저 계산을 실행해주세요.');
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(latestResultSummary);
+                alert('결과를 복사했습니다.');
+            } catch {
+                alert('복사에 실패했습니다. 브라우저 권한을 확인해주세요.');
+            }
+        });
+
+        renderGuidePanel();
+        setupResponsiveTabs();
+        updateDurationFeedback();
+        updateVisitorsFeedback();
+        updateMdeModeUI();
+        applyEvenRatios();
+        updateUniqueUsersPreview();
+        updateMdePreview();
+        updateMdeComparison();
+    </script>
+</body>
+</html>
