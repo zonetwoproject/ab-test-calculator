@@ -97,7 +97,8 @@ const GuideScreen = React.forwardRef<GuideScreenHandle>(function GuideScreen(_, 
     },
     {
       title: '필요 샘플 수 (다중 그룹)',
-      description: '각 실험군이 대조군과 비교될 때 필요한 샘플을 계산하고,\n그중 가장 큰 값을 전체 필요 샘플로 사용합니다.',
+      description:
+        '각 실험군이 대조군과 비교될 때 필요한 샘플을 계산하고,\n그중 가장 큰 값을 전체 필요 샘플로 사용합니다.\n계산 변수: 기준 지표(p1), 목표 지표(p2), 그룹 비율(대조군/실험군), 신뢰도(alpha), 검정력(power)',
       equation: '실험군 i의 배분비(κi) = 실험군 i 비중 / 대조군 비중\n대조군 필요 샘플(ni) = (zα + zβ)^2 × [ p1(1-p1) + p2(1-p2)/κi ] / (p2-p1)^2\n해당 조합 총 필요 샘플 = ni / 대조군 비중\n최종 총 필요 샘플 수 = 올림(각 조합 총 필요 샘플 중 최대값)',
       code: 'kappa_i = treatmentRatio_i / controlRatio\nnControl_i = ((zAlpha + zBeta)^2 * (p1*(1-p1) + p2*(1-p2)/kappa_i)) / (p2 - p1)^2\ntotalForPair_i = nControl_i / controlRatio\nrequiredTotal = ceil(max(totalForPair_i))',
     },
@@ -166,8 +167,8 @@ const GuideScreen = React.forwardRef<GuideScreenHandle>(function GuideScreen(_, 
         ))}
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>A/B 테스트 계산기 Mark10</Text>
-          <Text style={styles.footerSub}>v10 · 2026</Text>
+          <Text style={styles.footerText}>배민 실험 계산기 MARK11</Text>
+          <Text style={styles.footerSub}>2026.03</Text>
         </View>
     </ScrollView>
   );
