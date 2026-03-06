@@ -1,0 +1,7 @@
+.git
+.github
+node_modules
+.omx
+.codex-artifacts
+tmp
+versions/v7/*.png

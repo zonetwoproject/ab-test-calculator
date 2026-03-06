@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A/B 테스트 계산기 Mark8</title>
+    <title>A/B 테스트 계산기 Mark7</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='48'%3E%F0%9F%86%8E%3C/text%3E%3C/svg%3E">
+    <script src="https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"></script>
     <style>
         :root {
             --bg-page: #ffffff;
@@ -20,17 +21,17 @@
             --radius-lg: 10px;
             --radius-md: 8px;
             --card-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-            --fs-body: 13.5px;
-            --fs-title: 22px;
-            --fs-version: 12px;
-            --fs-label: 12px;
-            --fs-step: 14.5px;
-            --fs-input: 13.5px;
-            --fs-help: 11.5px;
-            --fs-unit: 13px;
-            --fs-btn: 13.5px;
+            --fs-body: 12.5px;
+            --fs-title: 21px;
+            --fs-version: 11px;
+            --fs-label: 11px;
+            --fs-step: 13.5px;
+            --fs-input: 12.5px;
+            --fs-help: 10.5px;
+            --fs-unit: 12px;
+            --fs-btn: 12.5px;
             --badge-size: 24px;
-            --badge-fs: 15px;
+            --badge-fs: 14px;
             --control-h: 38px;
             --row-gap: 14px;
             --space-1: 4px;
@@ -89,7 +90,7 @@
         }
 
         .drag-icon {
-            font-size: 13px;
+            font-size: 12px;
             opacity: 0.82;
         }
 
@@ -179,7 +180,9 @@
         }
 
         .step-label {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
             font-size: var(--fs-step);
             font-weight: 800;
             letter-spacing: -0.005em;
@@ -187,25 +190,18 @@
             margin-bottom: 0;
         }
 
-        .section-subtitle {
-            display: block;
-            font-size: calc(var(--fs-step) + 4.5px);
-            font-weight: 900;
-            color: #1f4f94;
-            letter-spacing: -0.01em;
-            line-height: 1.2;
-            text-align: center;
-            background: linear-gradient(180deg, #eef5ff 0%, #e6f0ff 100%);
-            border: 1px solid #ccddf8;
-            border-radius: 9px;
-            padding: var(--space-2) var(--space-3);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
-            margin-top: var(--space-2);
-            margin-bottom: var(--space-2);
-        }
-
-        #calculator-form > .section-subtitle:not(:first-of-type) {
-            margin-top: var(--space-5);
+        .step-badge {
+            width: var(--badge-size);
+            height: var(--badge-size);
+            border-radius: 999px;
+            background: var(--blue-1);
+            color: #fff;
+            font-size: var(--badge-fs);
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
         input[type="number"],
@@ -420,12 +416,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border: 2px solid transparent;
+            border: 2px solid #1b63ca;
             border-radius: var(--radius-md);
-        }
-
-        .collapsible-header.open {
-            border-color: #1b63ca;
         }
 
         .collapsible-content {
@@ -550,7 +542,7 @@
         }
 
         .result-main {
-            font-size: clamp(25px, 6vw, 41px);
+            font-size: clamp(24px, 6vw, 40px);
             font-weight: 900;
             color: var(--mint-text);
             line-height: 1;
@@ -587,7 +579,7 @@
         }
 
         .result-card-value {
-            font-size: clamp(15px, 2.4vw, 21px);
+            font-size: clamp(14px, 2.4vw, 20px);
             font-weight: 800;
             color: #111827;
             letter-spacing: -0.01em;
@@ -676,42 +668,32 @@
             }
 
             .result-grid {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
+                grid-template-columns: 1fr;
             }
 
             .result-card {
-                border-right: 1px solid #e1e6ee;
-                border-bottom: none;
-                padding: 6px 4px;
+                border-right: none;
+                border-bottom: 1px solid #d4d8e0;
             }
 
             .result-card:last-child {
-                border-right: none;
-            }
-
-            .result-card-label {
-                font-size: calc(var(--fs-input) - 1px);
-                white-space: nowrap;
-            }
-
-            .result-card-value {
-                font-size: clamp(12px, 3.2vw, 16px);
+                border-bottom: none;
             }
         }
 
         @media (min-width: 768px) and (max-width: 1199px) {
             :root {
-                --fs-body: 14.5px;
-                --fs-title: 25px;
-                --fs-version: 13px;
-                --fs-label: 13px;
-                --fs-step: 16px;
-                --fs-input: 14px;
-                --fs-help: 12px;
-                --fs-unit: 14px;
-                --fs-btn: 14px;
+                --fs-body: 13.5px;
+                --fs-title: 24px;
+                --fs-version: 12px;
+                --fs-label: 12px;
+                --fs-step: 15px;
+                --fs-input: 13px;
+                --fs-help: 11px;
+                --fs-unit: 13px;
+                --fs-btn: 13px;
                 --badge-size: 27px;
-                --badge-fs: 16px;
+                --badge-fs: 15px;
                 --control-h: 42px;
                 --row-gap: 15px;
                 --space-1: 4px;
@@ -760,17 +742,17 @@
 
         @media (min-width: 1200px) {
             :root {
-                --fs-body: 15px;
-                --fs-title: 27px;
-                --fs-version: 13.5px;
-                --fs-label: 13.5px;
-                --fs-step: 16.5px;
-                --fs-input: 14.5px;
-                --fs-help: 12.25px;
-                --fs-unit: 14.5px;
-                --fs-btn: 14.5px;
+                --fs-body: 14px;
+                --fs-title: 26px;
+                --fs-version: 12.5px;
+                --fs-label: 12.5px;
+                --fs-step: 15.5px;
+                --fs-input: 13.5px;
+                --fs-help: 11.25px;
+                --fs-unit: 13.5px;
+                --fs-btn: 13.5px;
                 --badge-size: 28px;
-                --badge-fs: 16.5px;
+                --badge-fs: 15.5px;
                 --control-h: 43px;
                 --row-gap: 16px;
                 --space-1: 4px;
@@ -843,7 +825,7 @@
                 <span class="drag-icon">⋮⋮</span>
                 <div class="title-line">
                     <h1>실험 계산기</h1>
-                    <span class="version-badge">Mark8</span>
+                    <span class="version-badge">Mark7</span>
                 </div>
             </div>
         </div>
@@ -854,24 +836,43 @@
                 <div class="guide-box">
                     <ol>
                         <li>동일 지면에서 여러 실험을 진행할 때 샘플이 겹치지 않도록 슬롯을 나눠 사용하세요.</li>
-                        <li>실험 기간, 방문 수, 트래픽 사용률을 입력하면 권장 슬롯 수를 자동으로 계산합니다.</li>
+                        <li>실험 기간, 방문 빈도, 트래픽 사용률을 입력하면 권장 슬롯 수를 자동으로 계산합니다.</li>
                     </ol>
                 </div>
 
-                <div class="section-subtitle">고유 유저 계산하기</div>
-
-                <div class="form-group step-block">
-                    <label class="step-label" for="prop-duration">실험 기간은 며칠인가요?</label>
-                    <div class="input-with-unit">
-                        <input type="number" id="prop-duration" value="14" min="1" step="1" required>
-                        <span class="unit">일</span>
+                <div class="section-row paired-steps">
+                    <div class="form-group step-block">
+                        <label class="step-label" for="prop-duration"><span class="step-badge">1</span>실험 기간은 며칠인가요?</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="prop-duration" value="14" min="1" step="1" required>
+                            <span class="unit">일</span>
+                        </div>
+                        <div class="help-text">14일은 요일 효과 제거에 권장되는 기준입니다.</div>
+                        <div class="info-text" id="duration-feedback"></div>
                     </div>
-                    <div class="info-text" id="duration-feedback"></div>
+
+                    <div class="form-group step-block">
+                        <label class="step-label" for="visit-frequency"><span class="step-badge">2</span>실험 지면에 사용자가 얼마나 자주 방문하나요?</label>
+                        <select id="visit-frequency">
+                            <option value="4.2" selected>K=4.2 (평균 4회 이상 · 메인홈/검색홈)</option>
+                            <option value="3.0">K=3.0 (평균 3회 · 목록/상세/검색결과)</option>
+                            <option value="2.0">K=2.0 (평균 1~2회 · 주문내역/주소설정)</option>
+                            <option value="1.2">K=1.2 (평균 1회 · 주문완료/결제성공)</option>
+                            <option value="custom">직접 입력</option>
+                        </select>
+                        <div id="custom-k-wrap" class="custom-k-wrap is-hidden">
+                            <div class="input-with-unit">
+                                <input type="number" id="custom-k" placeholder="예: 2.7" min="0.01" step="0.01">
+                                <span class="unit">K</span>
+                            </div>
+                        </div>
+                        <div class="help-text">K가 클수록 중복 방문이 많아 고유 유저가 줄어듭니다.</div>
+                    </div>
                 </div>
 
                 <div class="section-row traffic-row">
                     <div class="form-group">
-                        <label class="step-label" for="prop-daily-visitors">하루에 몇 명이 방문하나요?</label>
+                        <label class="step-label" for="prop-daily-visitors"><span class="step-badge">3</span>하루에 몇 명이 방문하나요?</label>
                         <div class="input-with-unit">
                             <input type="number" id="prop-daily-visitors" placeholder="예: 100000" min="1" step="1" required>
                             <span class="unit">명/일</span>
@@ -880,21 +881,20 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="step-label" for="traffic-usage">전체 트래픽 중 실험 사용 비율</label>
+                        <label class="step-label" for="traffic-usage"><span class="step-badge">4</span>전체 트래픽 중 실험 사용 비율</label>
                         <div class="input-with-unit">
                             <input type="number" id="traffic-usage" value="100" min="1" max="100" step="1" required>
                             <span class="unit">%</span>
                         </div>
                         <div class="help-text">예: 70 입력 시 추정 고유 유저의 70%만 실험에 사용합니다.</div>
-                        <div class="highlight-box" id="preview-users"></div>
                     </div>
                 </div>
 
-                <div class="section-subtitle">실험 그룹 배분하기</div>
+                <div class="highlight-box" id="preview-users"></div>
 
                 <div class="section-row group-row">
                     <div class="form-group">
-                        <label class="step-label" for="group-count">실험 그룹 수 (대조군 포함)</label>
+                        <label class="step-label" for="group-count"><span class="step-badge">5</span>실험 그룹 수 (대조군 포함)</label>
                         <select id="group-count">
                             <option value="2" selected>2개 (A/B)</option>
                             <option value="3">3개 (A/B/C)</option>
@@ -904,7 +904,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="step-label" for="group-ratios">배분 비율을 선택하세요</label>
+                        <label class="step-label" for="group-ratios"><span class="step-badge">6</span>배분 비율을 선택하세요</label>
                         <input type="text" id="group-ratios" value="50,50" placeholder="예: 50,30,20">
                         <div class="help-text">첫 번째 값은 대조군입니다. 쉼표로 구분하세요.</div>
                         <div class="chip-wrap">
@@ -914,21 +914,18 @@
                     </div>
                 </div>
 
-                <div class="section-subtitle">최소 감지 효과 계산하기</div>
-
                 <div class="section-row metric-goal-row">
                     <div class="form-group step-block">
-                        <label class="step-label" for="prop-baseline">목표 지표의 현재 수준은 어떤가요?</label>
+                        <label class="step-label" for="prop-baseline"><span class="step-badge">7</span>목표 지표의 현재 수준은 어떤가요?</label>
                         <div class="input-with-unit">
                             <input type="number" id="prop-baseline" placeholder="예: 3" min="0" max="100" step="0.0001" required>
                             <span class="unit">%</span>
                         </div>
-                        <div class="help-text">목표하는 지표의 최근 일평균 값을 입력해주세요. (CTR, CVR 등)</div>
-                        <div class="highlight-box" id="mde-preview"></div>
+                        <div class="help-text">전환율, 클릭률 등의 현재 지표를 입력하세요.</div>
                     </div>
 
                     <div class="form-group step-block">
-                        <label class="step-label" for="mde-mode">이 지표를 얼마나 개선하고 싶으신가요?</label>
+                        <label class="step-label" for="mde-mode"><span class="step-badge">8</span>이 지표를 얼마나 개선하고 싶으신가요?</label>
                         <select id="mde-mode">
                             <option value="relative" selected>상대 개선율 (%)</option>
                             <option value="absolute">절대 개선폭 (%p)</option>
@@ -937,10 +934,12 @@
                         <div class="mde-buttons" id="mde-buttons"></div>
 
                         <div class="input-with-unit">
-                            <input type="number" id="prop-mde" placeholder="예: 5" min="0" step="0.0001" required>
+                            <input type="number" id="prop-mde" value="5" placeholder="예: 5" min="0" step="0.0001" required>
                             <span class="unit" id="mde-unit">%</span>
                         </div>
                         <div class="help-text" id="mde-help">상대 개선율 기준으로 목표를 입력하세요.</div>
+
+                        <div class="highlight-box" id="mde-preview"></div>
                         <div class="comparison-box" id="mde-comparison"></div>
                     </div>
                 </div>
@@ -1031,34 +1030,205 @@
         </div>
 
         <div class="footer">
+            <a href="../../index.html">← 처음으로</a> ·
             Built by <a href="mailto:zonetwo.project@gmail.com">zonetwo.project</a> |
             <a href="https://github.com/zonetwoproject/ab-test-calculator" target="_blank">GitHub</a>
         </div>
     </div>
 
-    <script type="module">
-        import {
-            TOTAL_SLOTS,
-            PRESET_MDE,
-            FIXED_K_META,
-            formatNumber,
-            getDefaultRatios,
-            parseGroupRatios,
-            calculateDetectableMde,
-            validateBaseFormData,
-            validateFormData,
-            calculateExperiment
-        } from '../../shared/mark8-core.js';
-
+    <script>
         const CONFIG = {
-            TOTAL_SLOTS,
-            PRESET_MDE
+            TOTAL_SLOTS: 10000,
+            PRESET_MDE: {
+                relative: [5, 10, 15, 20],
+                absolute: [0.1, 0.2, 0.5, 1.0]
+            },
+            K_VALUES: {
+                '4.2': {
+                    k: 4.2,
+                    emoji: '🏠',
+                    message: '메인홈처럼 자주 방문하는 지면이라 한 사람이 여러 번 유입됩니다.'
+                },
+                '3.0': {
+                    k: 3.0,
+                    emoji: '🔍',
+                    message: '보통 빈도의 탐색 지면으로 방문 대비 고유 유저가 1/3 수준입니다.'
+                },
+                '2.0': {
+                    k: 2.0,
+                    emoji: '📋',
+                    message: '재방문이 적은 편이라 방문 대비 고유 유저 비율이 높습니다.'
+                },
+                '1.2': {
+                    k: 1.2,
+                    emoji: '🎯',
+                    message: '거의 1회성 지면이라 방문이 대부분 다른 사용자입니다.'
+                }
+            }
         };
-
         let latestResultSummary = '';
 
+        function formatNumber(value) {
+            if (!Number.isFinite(value)) {
+                return '-';
+            }
+            return Math.round(value).toLocaleString('ko-KR');
+        }
+
+        function getDefaultRatios(groupCount) {
+            const base = Math.floor(100 / groupCount);
+            const values = Array(groupCount).fill(base);
+            let remaining = 100 - (base * groupCount);
+            let idx = 0;
+            while (remaining > 0) {
+                values[idx] += 1;
+                remaining -= 1;
+                idx += 1;
+            }
+            return values;
+        }
+
+        function parseGroupRatios(text, groupCount) {
+            const tokens = text
+                .split(/[\s,]+/)
+                .map((x) => x.trim())
+                .filter(Boolean);
+
+            if (tokens.length !== groupCount) {
+                throw new Error(`그룹 수(${groupCount})와 비중 개수가 다릅니다.`);
+            }
+
+            const values = tokens.map((token) => Number(token));
+            if (values.some((num) => !Number.isFinite(num) || num <= 0)) {
+                throw new Error('그룹 비중은 0보다 큰 숫자여야 합니다.');
+            }
+
+            const sum = values.reduce((acc, cur) => acc + cur, 0);
+            if (Math.abs(sum - 100) > 0.01) {
+                throw new Error(`그룹 비중 합계는 100이어야 합니다. 현재 ${sum.toFixed(2)}입니다.`);
+            }
+
+            const ratios = values.map((value) => value / sum);
+            return { values, ratios };
+        }
+
+        function distributeByRatios(total, ratios) {
+            const raw = ratios.map((ratio) => ratio * total);
+            const floors = raw.map((value) => Math.floor(value));
+            let remaining = total - floors.reduce((acc, cur) => acc + cur, 0);
+            const order = raw
+                .map((value, idx) => ({ idx, frac: value - floors[idx] }))
+                .sort((a, b) => b.frac - a.frac)
+                .map((item) => item.idx);
+
+            let pointer = 0;
+            while (remaining > 0) {
+                floors[order[pointer % order.length]] += 1;
+                pointer += 1;
+                remaining -= 1;
+            }
+            return floors;
+        }
+
         function getKValueOrThrow() {
-            return FIXED_K_META;
+            const visitFrequency = document.getElementById('visit-frequency').value;
+            if (visitFrequency === 'custom') {
+                const customK = parseFloat(document.getElementById('custom-k').value);
+                if (!Number.isFinite(customK) || customK <= 0) {
+                    throw new Error('직접 입력 K값은 0보다 커야 합니다.');
+                }
+                return {
+                    k: customK,
+                    emoji: '🧩',
+                    message: `직접 입력한 K=${customK.toFixed(2)}를 사용합니다.`
+                };
+            }
+            return CONFIG.K_VALUES[visitFrequency];
+        }
+
+        function getZScores(confidencePct, powerPct) {
+            const alpha = 1 - (confidencePct / 100);
+            const power = powerPct / 100;
+            const zAlpha = jStat.normal.inv(1 - alpha / 2, 0, 1);
+            const zBeta = jStat.normal.inv(power, 0, 1);
+
+            if (!Number.isFinite(zAlpha) || !Number.isFinite(zBeta)) {
+                throw new Error('신뢰도/검정력 값으로 Z-score를 계산하지 못했습니다.');
+            }
+            return { zAlpha, zBeta };
+        }
+
+        function calculateRequiredTotalUsers(p1, relativeEffect, controlRatio, treatmentRatios, zAlpha, zBeta) {
+            const p2 = p1 * (1 + relativeEffect);
+            if (p2 <= p1 || p2 >= 1) {
+                return Number.POSITIVE_INFINITY;
+            }
+
+            const zSumSq = Math.pow(zAlpha + zBeta, 2);
+            let maxTotalUsers = 0;
+
+            for (const treatmentRatio of treatmentRatios) {
+                const kappa = treatmentRatio / controlRatio;
+                const nControl = zSumSq *
+                    (p1 * (1 - p1) + (p2 * (1 - p2) / kappa)) /
+                    Math.pow(p2 - p1, 2);
+
+                const totalUsersForPair = nControl / controlRatio;
+                if (totalUsersForPair > maxTotalUsers) {
+                    maxTotalUsers = totalUsersForPair;
+                }
+            }
+
+            return maxTotalUsers;
+        }
+
+        function calculateDetectableMde(availableUsers, baselinePct, controlRatio, treatmentRatios, confidencePct, powerPct) {
+            if (!Number.isFinite(availableUsers) || availableUsers <= 0) {
+                return null;
+            }
+
+            const p1 = baselinePct / 100;
+            if (p1 <= 0 || p1 >= 1) {
+                return null;
+            }
+
+            let zAlpha;
+            let zBeta;
+            try {
+                ({ zAlpha, zBeta } = getZScores(confidencePct, powerPct));
+            } catch {
+                return null;
+            }
+
+            const maxRelative = Math.min(3, ((1 - p1) / p1) * 0.999);
+            if (!Number.isFinite(maxRelative) || maxRelative <= 0.0001) {
+                return null;
+            }
+
+            let low = 0.0001;
+            let high = maxRelative;
+            let best = null;
+
+            for (let i = 0; i < 60 && (high - low) > 0.000001; i += 1) {
+                const mid = (low + high) / 2;
+                const requiredUsers = calculateRequiredTotalUsers(p1, mid, controlRatio, treatmentRatios, zAlpha, zBeta);
+
+                if (requiredUsers <= availableUsers) {
+                    best = mid;
+                    high = mid;
+                } else {
+                    low = mid;
+                }
+            }
+
+            if (best === null) {
+                return null;
+            }
+
+            return {
+                relativePct: best * 100,
+                absolutePctPoint: p1 * best * 100
+            };
         }
 
         function getFormData() {
@@ -1073,6 +1243,77 @@
                 mdeInput: parseFloat(document.getElementById('prop-mde').value),
                 confidencePct: parseFloat(document.getElementById('confidence-level').value),
                 powerPct: parseFloat(document.getElementById('power-level').value)
+            };
+        }
+
+        function validateFormData(formData, ratioMeta) {
+            if (!Number.isFinite(formData.duration) || formData.duration < 1) {
+                throw new Error('실험 기간을 1일 이상 입력해주세요.');
+            }
+            if (!Number.isFinite(formData.dailyVisitors) || formData.dailyVisitors < 1) {
+                throw new Error('하루 방문수를 1 이상 입력해주세요.');
+            }
+            if (!Number.isFinite(formData.trafficUsagePct) || formData.trafficUsagePct <= 0 || formData.trafficUsagePct > 100) {
+                throw new Error('실험 사용 비율은 0 초과 100 이하로 입력해주세요.');
+            }
+            if (!Number.isFinite(formData.baselinePct) || formData.baselinePct <= 0 || formData.baselinePct >= 100) {
+                throw new Error('현재 지표는 0~100 사이 값으로 입력해주세요.');
+            }
+            if (!Number.isFinite(formData.mdeInput) || formData.mdeInput <= 0) {
+                throw new Error('개선 목표는 0보다 큰 값이어야 합니다.');
+            }
+            if (formData.mdeMode === 'absolute' && (formData.baselinePct + formData.mdeInput >= 100)) {
+                throw new Error('절대 개선폭은 baseline과 합쳐 100% 미만이어야 합니다.');
+            }
+            if (!Number.isFinite(formData.confidencePct) || formData.confidencePct <= 50 || formData.confidencePct >= 100) {
+                throw new Error('신뢰도는 50 초과 100 미만으로 입력해주세요.');
+            }
+            if (!Number.isFinite(formData.powerPct) || formData.powerPct <= 50 || formData.powerPct >= 100) {
+                throw new Error('검정력은 50 초과 100 미만으로 입력해주세요.');
+            }
+            if (!ratioMeta || !ratioMeta.ratios || ratioMeta.ratios.length !== formData.groupCount) {
+                throw new Error('그룹 비중 설정을 확인해주세요.');
+            }
+
+            const controlRatio = ratioMeta.ratios[0];
+            if (controlRatio <= 0) {
+                throw new Error('대조군 비중은 0보다 커야 합니다.');
+            }
+        }
+
+        function calculateExperiment(formData, ratioMeta, kMeta) {
+            const controlRatio = ratioMeta.ratios[0];
+            const treatmentRatios = ratioMeta.ratios.slice(1);
+            const p1 = formData.baselinePct / 100;
+            const relativeEffect = formData.mdeMode === 'relative'
+                ? (formData.mdeInput / 100)
+                : (formData.mdeInput / formData.baselinePct);
+
+            const { zAlpha, zBeta } = getZScores(formData.confidencePct, formData.powerPct);
+
+            const totalUniqueUsers = Math.round((formData.dailyVisitors * formData.duration) / kMeta.k);
+            const availableUsers = Math.round(totalUniqueUsers * (formData.trafficUsagePct / 100));
+
+            const requiredTotalRaw = calculateRequiredTotalUsers(p1, relativeEffect, controlRatio, treatmentRatios, zAlpha, zBeta);
+            const requiredTotal = Math.ceil(requiredTotalRaw);
+
+            const sampleCounts = distributeByRatios(requiredTotal, ratioMeta.ratios);
+
+            const usersPerSlot = availableUsers / CONFIG.TOTAL_SLOTS;
+            const requiredSlots = usersPerSlot > 0 ? Math.ceil(requiredTotal / usersPerSlot) : Number.POSITIVE_INFINITY;
+            const slotUsagePct = Number.isFinite(requiredSlots)
+                ? (requiredSlots / CONFIG.TOTAL_SLOTS) * 100
+                : Number.POSITIVE_INFINITY;
+
+            return {
+                totalUniqueUsers,
+                availableUsers,
+                requiredTotal,
+                sampleCounts,
+                requiredSlots,
+                slotUsagePct,
+                relativeEffectPct: relativeEffect * 100,
+                absoluteEffectPctPoint: p1 * relativeEffect * 100
             };
         }
 
@@ -1102,20 +1343,11 @@
         }
 
         function updateVisitorsFeedback() {
-            const visitorInput = document.getElementById('prop-daily-visitors');
-            const rawValue = visitorInput.value.trim();
-            const visitors = parseFloat(rawValue);
+            const visitors = parseFloat(document.getElementById('prop-daily-visitors').value);
             const feedback = document.getElementById('visitors-feedback');
             feedback.classList.remove('error', 'muted');
 
-            if (!rawValue) {
-                feedback.classList.add('show');
-                feedback.classList.add('muted');
-                feedback.innerHTML = `실험 분배 단위 기준, 최근 1개월 기준 일평균 방문 수를 입력하세요<br>(예. 디바이스 기준 실험의 경우 device_id의 일평균 방문)`;
-                return;
-            }
-
-            if (!Number.isFinite(visitors) || visitors < 1) {
+            if (!visitors || visitors < 1) {
                 feedback.classList.add('show');
                 feedback.classList.add('error');
                 feedback.textContent = '❌ 1명 이상 입력하세요.';
@@ -1151,8 +1383,9 @@
                     <strong>💡 예상 고유 유저: 약 ${formatNumber(totalUniqueUsers)}명</strong><br>
                     실험 사용 비율 ${formData.trafficUsagePct}% 적용 시: <strong>${formatNumber(availableUsers)}명</strong><br>
                     <span class="preview-meta">
-                        계산: (${formatNumber(formData.dailyVisitors)} × ${formData.duration}일) ÷ ${kMeta.k.toFixed(2)} × ${formData.trafficUsagePct}% (K=1 고정)
-                    </span>
+                        계산: (${formatNumber(formData.dailyVisitors)} × ${formData.duration}일) ÷ ${kMeta.k.toFixed(2)} × ${formData.trafficUsagePct}%
+                    </span><br>
+                    <span class="preview-meta">${kMeta.emoji} ${kMeta.message}</span>
                 `;
             } catch {
                 previewBox.style.display = 'none';
@@ -1184,6 +1417,7 @@
             const input = document.getElementById('prop-mde');
             const buttonWrap = document.getElementById('mde-buttons');
             const values = CONFIG.PRESET_MDE[mode];
+            const defaultValue = mode === 'relative' ? 5 : 0.1;
 
             if (mode === 'relative') {
                 unit.textContent = '%';
@@ -1198,6 +1432,8 @@
                 input.min = '0';
                 input.placeholder = '예: 0.2';
             }
+
+            input.value = String(defaultValue);
 
             buttonWrap.innerHTML = values
                 .map((value) => {
@@ -1225,7 +1461,7 @@
             const formData = getFormData();
             const ratioMeta = parseGroupRatios(formData.groupRatiosText, formData.groupCount);
             const kMeta = getKValueOrThrow();
-            validateBaseFormData(formData, ratioMeta);
+            validateFormData(formData, ratioMeta);
 
             const totalUniqueUsers = Math.round((formData.dailyVisitors * formData.duration) / kMeta.k);
             const availableUsers = Math.round(totalUniqueUsers * (formData.trafficUsagePct / 100));
@@ -1267,7 +1503,7 @@
                 previewBox.style.display = 'block';
                 previewBox.innerHTML = `
                     🎯 현재 조건에서 검증 가능한 최소 효과<br>
-                    <strong>상대 ${detectable.relativePct.toFixed(4)}%</strong> / 절대 ${detectable.absolutePctPoint.toFixed(3)}%p<br>
+                    <strong>상대 ${detectable.relativePct.toFixed(2)}%</strong> / 절대 ${detectable.absolutePctPoint.toFixed(3)}%p<br>
                     기준 ${formData.baselinePct.toFixed(2)}% → ${newValue.toFixed(2)}%
                 `;
             } catch {
@@ -1284,7 +1520,6 @@
                     comparisonBox.className = 'comparison-box';
                     return;
                 }
-                validateFormData(formData, ratioMeta);
 
                 const kMeta = getKValueOrThrow();
                 const totalUniqueUsers = Math.round((formData.dailyVisitors * formData.duration) / kMeta.k);
@@ -1315,7 +1550,7 @@
                 if (targetRelative > detectable.relativePct * 1.5) {
                     comparisonBox.className = 'comparison-box success';
                     comparisonBox.innerHTML = `
-                        최소 감지 가능 개선: ${detectable.relativePct.toFixed(4)}% (상대)<br>
+                        최소 감지 가능 개선: ${detectable.relativePct.toFixed(2)}% (상대)<br>
                         목표(${targetRelative.toFixed(2)}%)는 충분히 검증 가능합니다.
                     `;
                     return;
@@ -1324,7 +1559,7 @@
                 if (targetRelative >= detectable.relativePct) {
                     comparisonBox.className = 'comparison-box warning';
                     comparisonBox.innerHTML = `
-                        최소 감지 가능 개선: ${detectable.relativePct.toFixed(4)}% (상대)<br>
+                        최소 감지 가능 개선: ${detectable.relativePct.toFixed(2)}% (상대)<br>
                         목표(${targetRelative.toFixed(2)}%)는 검증 가능하지만 여유가 크지 않습니다.
                     `;
                     return;
@@ -1347,13 +1582,13 @@
                         formData.powerPct
                     );
                     if (futureDetectable && futureDetectable.relativePct <= targetRelative) {
-                        suggestions += `• <button type="button" class="chip-btn" onclick="applySuggestedDuration(${days})">${days}일로 재계산</button> → 최소 ${futureDetectable.relativePct.toFixed(4)}%<br>`;
+                        suggestions += `• <button type="button" class="chip-btn" onclick="applySuggestedDuration(${days})">${days}일로 재계산</button> → 최소 ${futureDetectable.relativePct.toFixed(2)}%<br>`;
                     }
                 }
 
                 comparisonBox.className = 'comparison-box error';
                 comparisonBox.innerHTML = `
-                    현재 최소 감지 가능 개선: ${detectable.relativePct.toFixed(4)}% (상대)<br>
+                    현재 최소 감지 가능 개선: ${detectable.relativePct.toFixed(2)}% (상대)<br>
                     목표(${targetRelative.toFixed(2)}%)는 현재 설정에서 검증이 어렵습니다.<br>
                     <div class="comparison-suggestions">${suggestions || '권장: 기간 연장 또는 트래픽 사용 비율 상향을 검토하세요.'}</div>
                 `;
@@ -1407,7 +1642,16 @@
                 : roundedRatios.map((value, idx) => `그룹${idx + 1}(${value}%)`).join(' : ');
 
             const kMeta = getKValueOrThrow();
-            const frequencyLabel = `고정(k=${kMeta.k.toFixed(2)})`;
+            const frequencyValue = document.getElementById('visit-frequency').value;
+            const frequencyLabelMap = {
+                '4.2': '고빈도(k=4.2)',
+                '3.0': '중빈도(k=3.0)',
+                '2.0': '저빈도(k=2.0)',
+                '1.2': '초저빈도(k=1.2)'
+            };
+            const frequencyLabel = frequencyValue === 'custom'
+                ? `직접 입력(k=${kMeta.k.toFixed(2)})`
+                : (frequencyLabelMap[frequencyValue] || `k=${kMeta.k.toFixed(2)}`);
 
             const detectable = calculateDetectableMde(
                 result.availableUsers,
@@ -1420,7 +1664,7 @@
             const targetRelative = formData.mdeMode === 'relative'
                 ? formData.mdeInput
                 : (formData.mdeInput / formData.baselinePct) * 100;
-            const mdeText = detectable ? `${detectable.relativePct.toFixed(4)}%` : '계산 불가';
+            const mdeText = detectable ? `${detectable.relativePct.toFixed(2)}%` : '계산 불가';
             const verdictText = detectable && targetRelative >= detectable.relativePct
                 ? '실험 검증 가능'
                 : '실험 검증 어려움';
@@ -1449,6 +1693,12 @@
             document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
+        function syncCustomKField() {
+            const mode = document.getElementById('visit-frequency').value;
+            const wrap = document.getElementById('custom-k-wrap');
+            wrap.classList.toggle('is-hidden', mode !== 'custom');
+        }
+
         function applyEvenRatios() {
             const groupCount = parseInt(document.getElementById('group-count').value, 10);
             const values = getDefaultRatios(groupCount);
@@ -1472,6 +1722,18 @@
             const isOpen = content.classList.toggle('show');
             header.classList.toggle('open', isOpen);
             header.setAttribute('aria-expanded', String(isOpen));
+        });
+
+        document.getElementById('visit-frequency').addEventListener('change', () => {
+            syncCustomKField();
+            updateUniqueUsersPreview();
+            updateMdePreview();
+            updateMdeComparison();
+        });
+        document.getElementById('custom-k').addEventListener('input', () => {
+            updateUniqueUsersPreview();
+            updateMdePreview();
+            updateMdeComparison();
         });
 
         document.getElementById('prop-duration').addEventListener('input', () => {
@@ -1558,6 +1820,7 @@
             setTimeout(() => {
                 document.getElementById('results').classList.remove('show');
                 latestResultSummary = '';
+                syncCustomKField();
                 updateDurationFeedback();
                 updateVisitorsFeedback();
                 updateMdeModeUI();
@@ -1581,6 +1844,7 @@
             }
         });
 
+        syncCustomKField();
         updateDurationFeedback();
         updateVisitorsFeedback();
         updateMdeModeUI();

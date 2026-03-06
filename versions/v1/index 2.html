@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A/B 테스트 계산기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            background: white;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-with-unit {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-with-unit input {
+            flex: 1;
+        }
+
+        .unit {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 16px;
+            min-width: 30px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 24px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #f9f0ff 100%);
+            border-radius: 12px;
+            border: 2px solid #667eea;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .result-main {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .result-main-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .result-main-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .result-card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .result-card-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .result-card-label {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 14px;
+            margin-bottom: 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #1e40af;
+            line-height: 1.5;
+        }
+
+        .tooltip {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            cursor: help;
+            margin-left: 6px;
+            position: relative;
+            font-weight: 700;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 14px;
+            background: #1f2937;
+            color: white;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            font-weight: 400;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .tooltip:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1f2937;
+            z-index: 1000;
+        }
+
+        .help-text {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .quick-preset {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .preset-btn {
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .preset-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .preset-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .advanced-settings {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 2px dashed #e5e7eb;
+        }
+
+        .advanced-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: #667eea;
+            font-size: 14px;
+            font-weight: 600;
+            user-select: none;
+            padding: 8px 0;
+        }
+
+        .advanced-toggle:hover {
+            color: #764ba2;
+        }
+
+        .advanced-toggle::before {
+            content: '▶';
+            font-size: 10px;
+            transition: transform 0.2s;
+        }
+
+        .advanced-toggle.open::before {
+            transform: rotate(90deg);
+        }
+
+        .advanced-content {
+            display: none;
+            margin-top: 16px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .advanced-content.show {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .calculation-mode {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mode-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .mode-option:hover {
+            border-color: #667eea;
+            background: #f9fafb;
+        }
+
+        .mode-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            cursor: pointer;
+            accent-color: #667eea;
+            flex-shrink: 0;
+        }
+
+        .mode-option:has(input:checked) {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .mode-label {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex: 1;
+        }
+
+        .mode-label strong {
+            font-size: 14px;
+            color: #111827;
+        }
+
+        .mode-label small {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .mode-option input[type="radio"]:checked + .mode-label strong {
+            color: #667eea;
+        }
+
+        .mode-option input[type="radio"]:checked + .mode-label small {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 A/B 테스트 계산기</h1>
+            <p>실험에 필요한 사용자 수와 기간을 쉽게 계산하세요</p>
+        </div>
+
+        <div class="content">
+            <!-- 클릭률/전환율 탭 -->
+            <div class="tab-content active" id="proportion">
+                <div class="info-box">
+                    <strong>💡 언제 사용하나요?</strong><br>
+                    클릭률, 구매 전환율, 가입률 등 <strong>%(퍼센트)</strong>로 측정되는 지표를 개선하는 실험에 사용하세요
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        1. 현재 지표는 얼마인가요?
+                        <span class="tooltip" data-tip="기존 A안의 지표를 입력하세요">?</span>
+                    </label>
+                    <div class="input-with-unit">
+                        <input type="number" id="prop-baseline" value="3" step="0.1" min="0.1" max="100">
+                        <span class="unit">%</span>
+                    </div>
+                    <div class="help-text">예: 현재 구매 전환율이 3%라면 "3" 입력</div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        2. 얼마나 개선하고 싶으신가요?
+                        <span class="tooltip" data-tip="B안으로 달성하고 싶은 목표치를 설정하세요">?</span>
+                    </label>
+                    
+                    <div class="quick-preset">
+                        <button class="preset-btn" onclick="setMDE('prop', 5)">+5%</button>
+                        <button class="preset-btn active" onclick="setMDE('prop', 10)">+10%</button>
+                        <button class="preset-btn" onclick="setMDE('prop', 20)">+20%</button>
+                    </div>
+
+                    <div class="row">
+                        <div>
+                            <select id="prop-mde-type" onchange="updateMDEHelp('prop')">
+                                <option value="relative">상대적 개선</option>
+                                <option value="absolute">절대적 개선</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="input-with-unit">
+                                <input type="number" id="prop-mde" value="10" step="0.1">
+                                <span class="unit" id="prop-mde-unit">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="help-text" id="prop-mde-help">예: 3% → 3.30% (10% 상대 개선)</div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        3. 테스트 조건을 입력하세요
+                        <span class="tooltip" data-tip="일일 방문수를 알면 기간을, 목표 기간을 알면 필요한 방문수를 계산합니다">?</span>
+                    </label>
+                    
+                    <div class="calculation-mode">
+                        <label class="mode-option">
+                            <input type="radio" name="calc-mode" value="duration" checked onchange="switchCalculationMode()">
+                            <span class="mode-label">
+                                <strong>일일 방문수를 알고 있어요</strong>
+                                <small>→ 테스트 기간 계산</small>
+                            </span>
+                        </label>
+                        
+                        <label class="mode-option">
+                            <input type="radio" name="calc-mode" value="traffic" onchange="switchCalculationMode()">
+                            <span class="mode-label">
+                                <strong>목표 기간이 정해져 있어요</strong>
+                                <small>→ 필요한 일일 방문수 계산</small>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div id="duration-mode-input" style="margin-top: 12px;">
+                        <input type="number" id="prop-traffic" placeholder="예: 100,000" step="1000">
+                        <div class="help-text">하루에 이 지면을 방문하는 사람 수를 입력하세요</div>
+                    </div>
+                    
+                    <div id="traffic-mode-input" style="margin-top: 12px; display: none;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="number" id="prop-duration" placeholder="예: 14" step="1" min="1" style="flex: 1;">
+                            <span style="font-weight: 600; color: #667eea;">일</span>
+                        </div>
+                        <div class="help-text">테스트를 진행할 기간을 입력하세요</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        4. 실험군 배분 비율은 어떻게 하시겠어요?
+                        <span class="tooltip" data-tip="50:50이 가장 효율적이지만, 리스크가 크면 80:20도 고려하세요">?</span>
+                    </label>
+                    
+                    <select id="prop-allocation-preset" onchange="updateAllocationFromPreset()">
+                        <option value="1.0" selected>50:50</option>
+                        <option value="0.67">60:40</option>
+                        <option value="0.43">70:30</option>
+                        <option value="0.25">80:20</option>
+                        <option value="custom">직접 입력</option>
+                    </select>
+                    
+                    <div id="allocation-description" class="help-text" style="margin-top: 8px; color: #667eea; font-weight: 500;">
+                        ⭐ 가장 효율적인 배분 비율입니다
+                    </div>
+                    
+                    <div id="custom-allocation-input" style="display: none; margin-top: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px; max-width: 300px;">
+                            <input type="number" id="prop-allocation-control" placeholder="대조군" min="1" max="99" step="1" style="flex: 1; text-align: center;">
+                            <span style="font-weight: 600; color: #667eea;">:</span>
+                            <input type="number" id="prop-allocation-treatment" placeholder="실험군" min="1" max="99" step="1" style="flex: 1; text-align: center;">
+                        </div>
+                        <div class="help-text" style="margin-top: 8px;">예: 대조군 75, 실험군 25 입력</div>
+                    </div>
+                </div>
+
+                <!-- 고급 설정 -->
+                <div class="advanced-settings">
+                    <div class="advanced-toggle" id="prop-toggle" onclick="toggleAdvanced('prop')">
+                        고급 설정 (대부분의 경우 변경 불필요)
+                    </div>
+                    <div class="advanced-content" id="prop-advanced">
+                        <div class="row">
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label>
+                                    신뢰도
+                                    <span class="tooltip" data-tip="95%가 업계 표준입니다">?</span>
+                                </label>
+                                <select id="prop-alpha">
+                                    <option value="0.01">99% (매우 엄격)</option>
+                                    <option value="0.05" selected>95% ⭐ 권장</option>
+                                    <option value="0.10">90%</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label>
+                                    검정력
+                                    <span class="tooltip" data-tip="80%가 업계 표준입니다">?</span>
+                                </label>
+                                <select id="prop-power">
+                                    <option value="0.80" selected>80% ⭐ 권장</option>
+                                    <option value="0.90">90% (더 많은 샘플 필요)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="calculateProportion()">계산하기</button>
+
+                <div class="result" id="prop-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Z-values lookup table
+        const Z_VALUES = {
+            '0.01,0.80': [2.576, 0.842],
+            '0.01,0.90': [2.576, 1.282],
+            '0.05,0.80': [1.960, 0.842],
+            '0.05,0.90': [1.960, 1.282],
+            '0.10,0.80': [1.645, 0.842],
+            '0.10,0.90': [1.645, 1.282]
+        };
+
+        function getZValues(alpha, power) {
+            const key = `${alpha},${power}`;
+            return Z_VALUES[key] || [1.960, 0.842];
+        }
+
+        // MDE preset buttons
+        function setMDE(type, value) {
+            // Set the input value
+            document.getElementById(`${type}-mde`).value = value;
+            
+            // Update all buttons - only activate the clicked one
+            document.querySelectorAll(`#${type} .preset-btn`).forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update help text without recalculating button states
+            updateMDEHelpOnly(type);
+        }
+
+        // Update MDE help text only (without updating button states)
+        function updateMDEHelpOnly(type) {
+            const baseline = parseFloat(document.getElementById(`${type}-baseline`).value);
+            const mde = parseFloat(document.getElementById(`${type}-mde`).value);
+            const mdeType = document.getElementById(`${type}-mde-type`).value;
+            const helpEl = document.getElementById(`${type}-mde-help`);
+            const unitEl = document.getElementById(`${type}-mde-unit`);
+
+            if (mdeType === 'relative') {
+                const result = baseline * (1 + mde / 100);
+                helpEl.textContent = `예: ${baseline}% → ${result.toFixed(2)}% (${mde}% 상대 개선)`;
+                unitEl.textContent = '%';
+            } else {
+                const result = baseline + mde;
+                helpEl.textContent = `예: ${baseline}% → ${result.toFixed(2)}% (${mde}%p 절대 개선)`;
+                unitEl.textContent = '%p';
+            }
+        }
+
+        // Update MDE help text
+        function updateMDEHelp(type) {
+            const baseline = parseFloat(document.getElementById(`${type}-baseline`).value);
+            const mde = parseFloat(document.getElementById(`${type}-mde`).value);
+            const mdeType = document.getElementById(`${type}-mde-type`).value;
+            const helpEl = document.getElementById(`${type}-mde-help`);
+            const unitEl = document.getElementById(`${type}-mde-unit`);
+
+            if (mdeType === 'relative') {
+                const result = baseline * (1 + mde / 100);
+                helpEl.textContent = `예: ${baseline}% → ${result.toFixed(2)}% (${mde}% 상대 개선)`;
+                unitEl.textContent = '%';
+            } else {
+                const result = baseline + mde;
+                helpEl.textContent = `예: ${baseline}% → ${result.toFixed(2)}% (${mde}%p 절대 개선)`;
+                unitEl.textContent = '%p';
+            }
+
+            // Update preset button states
+            updatePresetButtons(type, mde);
+        }
+
+        // Update preset button active states based on current MDE value
+        function updatePresetButtons(type, currentValue) {
+            const buttons = document.querySelectorAll(`#${type} .preset-btn`);
+            let hasMatch = false;
+            
+            buttons.forEach(btn => {
+                const btnValue = parseFloat(btn.textContent.replace('+', '').replace('%', ''));
+                if (btnValue === currentValue) {
+                    btn.classList.add('active');
+                    hasMatch = true;
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // If no button matches, deactivate all
+            if (!hasMatch) {
+                buttons.forEach(btn => btn.classList.remove('active'));
+            }
+        }
+
+        // Update allocation from preset
+        function updateAllocationFromPreset() {
+            const preset = document.getElementById('prop-allocation-preset');
+            const customInput = document.getElementById('custom-allocation-input');
+            const descriptionEl = document.getElementById('allocation-description');
+            
+            const descriptions = {
+                '1.0': '⭐ 가장 효율적인 배분 비율입니다',
+                '0.67': '안정적인 배분 비율입니다',
+                '0.43': '보수적인 배분 비율입니다',
+                '0.25': '🛡️ 리스크를 최소화하는 배분 비율입니다',
+                'custom': '원하는 비율을 직접 입력하세요'
+            };
+            
+            if (preset.value === 'custom') {
+                customInput.style.display = 'block';
+                descriptionEl.textContent = descriptions['custom'];
+                descriptionEl.style.color = '#6b7280';
+                descriptionEl.style.fontWeight = '400';
+            } else {
+                customInput.style.display = 'none';
+                descriptionEl.textContent = descriptions[preset.value];
+                descriptionEl.style.color = '#667eea';
+                descriptionEl.style.fontWeight = '500';
+            }
+        }
+
+        // Get kappa value from allocation settings
+        function getAllocationKappa() {
+            const preset = document.getElementById('prop-allocation-preset');
+            
+            if (preset.value === 'custom') {
+                const control = parseFloat(document.getElementById('prop-allocation-control').value);
+                const treatment = parseFloat(document.getElementById('prop-allocation-treatment').value);
+                
+                if (control && treatment && control > 0 && treatment > 0) {
+                    return treatment / control;
+                } else {
+                    alert('대조군과 실험군 비율을 모두 입력해주세요.');
+                    return null;
+                }
+            } else {
+                return parseFloat(preset.value);
+            }
+        }
+
+        // Switch calculation mode
+        function switchCalculationMode() {
+            const mode = document.querySelector('input[name="calc-mode"]:checked').value;
+            const durationInput = document.getElementById('duration-mode-input');
+            const trafficInput = document.getElementById('traffic-mode-input');
+            
+            if (mode === 'duration') {
+                durationInput.style.display = 'block';
+                trafficInput.style.display = 'none';
+            } else {
+                durationInput.style.display = 'none';
+                trafficInput.style.display = 'block';
+            }
+        }
+
+        // Toggle advanced settings
+        function toggleAdvanced(type) {
+            const toggle = document.getElementById(`${type}-toggle`);
+            const content = document.getElementById(`${type}-advanced`);
+            
+            if (toggle && content) {
+                toggle.classList.toggle('open');
+                content.classList.toggle('show');
+            }
+        }
+
+        // Calculate for proportion metrics
+        function calculateProportion() {
+            const baseline = parseFloat(document.getElementById('prop-baseline').value) / 100;
+            const mdeValue = parseFloat(document.getElementById('prop-mde').value);
+            const mdeType = document.getElementById('prop-mde-type').value;
+            const alpha = parseFloat(document.getElementById('prop-alpha').value);
+            const power = parseFloat(document.getElementById('prop-power').value);
+            const kappa = getAllocationKappa();
+
+            if (kappa === null) return; // Validation failed
+
+            // Calculate p_treatment
+            let pTreatment;
+            if (mdeType === 'relative') {
+                pTreatment = baseline * (1 + mdeValue / 100);
+            } else {
+                pTreatment = baseline + (mdeValue / 100);
+            }
+
+            // Get z-values
+            const [zAlpha, zBeta] = getZValues(alpha, power);
+
+            // Calculate sample sizes
+            const pooledP = (baseline + pTreatment) / 2;
+            const pooledVar = pooledP * (1 - pooledP);
+            const delta = Math.abs(pTreatment - baseline);
+
+            const nControl = Math.ceil(
+                ((1 + 1/kappa) * Math.pow(zAlpha + zBeta, 2) * pooledVar) / Math.pow(delta, 2)
+            );
+            const nTreatment = Math.ceil(kappa * nControl);
+            const nTotal = nControl + nTreatment;
+
+            // Calculate efficiency
+            const efficiency = 1 / (1 + 1/kappa) * 2;
+
+            // Check calculation mode
+            const calcMode = document.querySelector('input[name="calc-mode"]:checked').value;
+            let resultData;
+
+            if (calcMode === 'duration') {
+                // Mode A: 일일 방문수 → 기간 계산
+                const traffic = parseInt(document.getElementById('prop-traffic').value);
+                
+                if (traffic && traffic > 0) {
+                    const duration = Math.ceil(nTotal / traffic);
+                    resultData = {
+                        main: `${duration}일`,
+                        mainLabel: '예상 테스트 기간',
+                        cards: [
+                            { value: nControl.toLocaleString() + '명', label: '대조군 (A안)' },
+                            { value: nTreatment.toLocaleString() + '명', label: '실험군 (B안)' },
+                            { value: nTotal.toLocaleString() + '명', label: '총 필요 샘플' },
+                            { value: (efficiency * 100).toFixed(0) + '%', label: '배분 효율성' }
+                        ],
+                        note: `하루 ${traffic.toLocaleString()}명 방문 기준 / ${(baseline * 100).toFixed(2)}% → ${(pTreatment * 100).toFixed(2)}%로 개선 시`
+                    };
+                } else {
+                    resultData = {
+                        main: `${nTotal.toLocaleString()}명`,
+                        mainLabel: '필요한 총 샘플 수',
+                        cards: [
+                            { value: nControl.toLocaleString() + '명', label: '대조군 (A안)' },
+                            { value: nTreatment.toLocaleString() + '명', label: '실험군 (B안)' },
+                            { value: nTotal.toLocaleString() + '명', label: '총 필요 샘플' },
+                            { value: (efficiency * 100).toFixed(0) + '%', label: '배분 효율성' }
+                        ],
+                        note: `${(baseline * 100).toFixed(2)}% → ${(pTreatment * 100).toFixed(2)}%로 개선 시`
+                    };
+                }
+            } else {
+                // Mode B: 목표 기간 → 필요 일일 방문수 계산
+                const targetDuration = parseInt(document.getElementById('prop-duration').value);
+                
+                if (targetDuration && targetDuration > 0) {
+                    const requiredTraffic = Math.ceil(nTotal / targetDuration);
+                    resultData = {
+                        main: `${requiredTraffic.toLocaleString()}명/일`,
+                        mainLabel: '필요한 일일 방문수',
+                        cards: [
+                            { value: nControl.toLocaleString() + '명', label: '대조군 (A안)' },
+                            { value: nTreatment.toLocaleString() + '명', label: '실험군 (B안)' },
+                            { value: nTotal.toLocaleString() + '명', label: '총 필요 샘플' },
+                            { value: (efficiency * 100).toFixed(0) + '%', label: '배분 효율성' }
+                        ],
+                        note: `${targetDuration}일 동안 테스트 진행 시 / ${(baseline * 100).toFixed(2)}% → ${(pTreatment * 100).toFixed(2)}%로 개선 시`
+                    };
+                } else {
+                    resultData = {
+                        main: `${nTotal.toLocaleString()}명`,
+                        mainLabel: '필요한 총 샘플 수',
+                        cards: [
+                            { value: nControl.toLocaleString() + '명', label: '대조군 (A안)' },
+                            { value: nTreatment.toLocaleString() + '명', label: '실험군 (B안)' },
+                            { value: nTotal.toLocaleString() + '명', label: '총 필요 샘플' },
+                            { value: (efficiency * 100).toFixed(0) + '%', label: '배분 효율성' }
+                        ],
+                        note: `${(baseline * 100).toFixed(2)}% → ${(pTreatment * 100).toFixed(2)}%로 개선 시`
+                    };
+                }
+            }
+
+            // Display results
+            displayResult('prop-result', resultData);
+        }
+
+        // Display result
+        function displayResult(elementId, data) {
+            const resultDiv = document.getElementById(elementId);
+            
+            // Remove and re-add show class to trigger animation
+            resultDiv.classList.remove('show');
+            
+            let html = `
+                <h3>📊 계산 결과</h3>
+                <div class="result-main">
+                    <div class="result-main-value">${data.main}</div>
+                    <div class="result-main-label">${data.mainLabel}</div>
+                </div>
+                <div class="result-grid">
+            `;
+            
+            data.cards.forEach(card => {
+                html += `
+                    <div class="result-card">
+                        <div class="result-card-value">${card.value}</div>
+                        <div class="result-card-label">${card.label}</div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            
+            if (data.note) {
+                html += `<div style="text-align: center; margin-top: 16px; font-size: 13px; color: #6b7280;">${data.note}</div>`;
+            }
+
+            resultDiv.innerHTML = html;
+            
+            // Force reflow to trigger animation
+            void resultDiv.offsetWidth;
+            resultDiv.classList.add('show');
+
+            // Scroll to result
+            setTimeout(() => {
+                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        // Initialize MDE help text
+        document.addEventListener('DOMContentLoaded', function() {
+            updateMDEHelp('prop');
+            
+            // Add listeners for baseline and MDE changes
+            ['prop-baseline', 'prop-mde-type'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('change', () => updateMDEHelp('prop'));
+                }
+            });
+
+            // Add input listener for MDE to update button states
+            const mdeInput = document.getElementById('prop-mde');
+            if (mdeInput) {
+                mdeInput.addEventListener('input', () => {
+                    updateMDEHelp('prop');
+                });
+                mdeInput.addEventListener('change', () => {
+                    updateMDEHelp('prop');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BookOpen, Calculator } from 'lucide-react-native';
 
 import Colors from '@/constants/color';
 import GuideScreen from '@/screens/GuideScreen';
@@ -13,7 +14,7 @@ type RootTabParamList = {
   Guide: undefined;
 };
 
-const Tab = createNativeBottomTabNavigator<RootTabParamList>();
+const Tab = createBottomTabNavigator<RootTabParamList>();
 
 function HeaderTitle() {
   return (
@@ -27,6 +28,7 @@ function HeaderTitle() {
 }
 
 export default function App() {
+  const androidHeaderHeight = (StatusBar.currentHeight ?? 0) + 44;
   const [isCalculatorTabBarCollapsed, setIsCalculatorTabBarCollapsed] = React.useState(false);
 
   const handleCalculatorNativeScroll = React.useCallback((signal: WebNativeScrollSignal) => {
@@ -58,12 +60,12 @@ export default function App() {
         <Tab.Navigator
           screenOptions={({ route }) => ({
             headerTitle: () => <HeaderTitle />,
+            headerTitleAlign: 'center',
+            headerStyle: {
+              height: Platform.OS === 'android' ? androidHeaderHeight : 44,
+            },
             tabBarActiveTintColor: Colors.primary,
             tabBarInactiveTintColor: Colors.textTertiary,
-            tabBarMinimizeBehavior:
-              Platform.OS === 'ios'
-                ? 'onScrollDown'
-                : undefined,
             tabBarStyle:
               Platform.OS === 'ios' && route.name === 'Calculator' && isCalculatorTabBarCollapsed
                 ? {
@@ -76,7 +78,6 @@ export default function App() {
               Platform.OS === 'ios' && route.name === 'Calculator'
                 ? !isCalculatorTabBarCollapsed
                 : true,
-            overrideScrollViewContentInsetAdjustmentBehavior: true,
             headerShown: true,
             tabBarLabelStyle: {
               fontSize: 11,
@@ -91,10 +92,7 @@ export default function App() {
             }}
             options={{
               title: '계산기',
-              tabBarIcon: ({ focused }) => ({
-                type: 'sfSymbol',
-                name: focused ? 'divide.square.fill' : 'divide.square',
-              }),
+              tabBarIcon: ({ color, size }) => <Calculator color={color} size={size} />,
             }}
           >
             {() => <WebAppScreen onNativeScroll={handleCalculatorNativeScroll} />}
@@ -103,10 +101,7 @@ export default function App() {
             name="Guide"
             options={{
               title: '사용 가이드',
-              tabBarIcon: ({ focused }) => ({
-                type: 'sfSymbol',
-                name: focused ? 'book.fill' : 'book',
-              }),
+              tabBarIcon: ({ color, size }) => <BookOpen color={color} size={size} />,
             }}
             component={GuideScreen}
           />

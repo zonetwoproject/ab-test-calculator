@@ -1,5 +1,5 @@
 import React, { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { WebView } from 'react-native-webview';
@@ -40,8 +40,12 @@ const NO_ZOOM_SCRIPT = `
       style.textContent = [
         '.header { display: none !important; }',
         '.tab-switcher { display: none !important; }',
+        '.workspace-grid { display: block !important; grid-template-columns: minmax(0, 1fr) !important; }',
+        '.calculator-pane { display: block !important; width: 100% !important; max-width: 100% !important; }',
         '.guide-pane { display: none !important; }',
+        '#guide-pane { display: none !important; }',
         '.footer { display: none !important; }',
+        '.guide-footer { display: none !important; }',
         '.content[data-active-tab="calculator"] .calculator-pane { display: block !important; }'
       ].join(' ');
       (document.head || document.documentElement).appendChild(style);
@@ -49,24 +53,75 @@ const NO_ZOOM_SCRIPT = `
 
     function forceCalculatorMode() {
       var content = document.querySelector('.content');
-      if (content) {
+      if (content && content.getAttribute('data-active-tab') !== 'calculator') {
         content.setAttribute('data-active-tab', 'calculator');
       }
     }
 
+    function ensureViewport() {
+      var viewportContent = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
+      var meta = document.querySelector('meta[name="viewport"]');
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('name', 'viewport');
+        (document.head || document.documentElement).appendChild(meta);
+      }
+      meta.setAttribute('content', viewportContent);
+    }
+
+    function postMessage(payload) {
+      if (!window.ReactNativeWebView || !window.ReactNativeWebView.postMessage) return;
+      window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+    }
+
+    var lastY = 0;
+    var lastTs = Date.now();
+
+    function sendNativeScrollSignal() {
+      var y = Math.max(0, window.scrollY || window.pageYOffset || 0);
+      var now = Date.now();
+      var dy = y - lastY;
+      var dt = Math.max(1, now - lastTs);
+      var direction = dy > 0.5 ? 'down' : (dy < -0.5 ? 'up' : 'idle');
+
+      lastY = y;
+      lastTs = now;
+
+      postMessage({
+        type: 'native-scroll',
+        y: y,
+        dy: dy,
+        direction: direction,
+        atTop: y <= 2,
+        velocityY: dy / (dt / 1000)
+      });
+    }
+
     applyInAppStyle();
     forceCalculatorMode();
-    document.addEventListener('DOMContentLoaded', applyInAppStyle);
-    document.addEventListener('DOMContentLoaded', forceCalculatorMode);
+    ensureViewport();
 
-    var content = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
-    var meta = document.querySelector('meta[name="viewport"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', 'viewport');
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute('content', content);
+    document.addEventListener('DOMContentLoaded', function () {
+      applyInAppStyle();
+      forceCalculatorMode();
+      ensureViewport();
+      sendNativeScrollSignal();
+    });
+
+    var mutationObserver = new MutationObserver(function () {
+      applyInAppStyle();
+      forceCalculatorMode();
+    });
+    mutationObserver.observe(document.documentElement, {
+      subtree: true,
+      childList: true
+    });
+
+    window.addEventListener('scroll', sendNativeScrollSignal, { passive: true });
+    window.addEventListener('load', sendNativeScrollSignal);
+    window.addEventListener('resize', sendNativeScrollSignal);
+
+    setTimeout(sendNativeScrollSignal, 80);
 
     var lastTouchEnd = 0;
     document.addEventListener('touchstart', function (event) {
@@ -84,139 +139,6 @@ const NO_ZOOM_SCRIPT = `
         event.preventDefault();
       }, { passive: false });
     });
-
-    function postMessage(payload) {
-      if (!window.ReactNativeWebView || !window.ReactNativeWebView.postMessage) return;
-      window.ReactNativeWebView.postMessage(JSON.stringify(payload));
-    }
-
-    function getDocumentHeight() {
-      var body = document.body;
-      var html = document.documentElement;
-      return Math.max(
-        body ? body.scrollHeight : 0,
-        body ? body.offsetHeight : 0,
-        html ? html.clientHeight : 0,
-        html ? html.scrollHeight : 0,
-        html ? html.offsetHeight : 0
-      );
-    }
-
-    var lastHeight = 0;
-    var scheduled = false;
-    function sendHeight(force) {
-      var height = Math.max(1, Math.ceil(getDocumentHeight()));
-      if (force || Math.abs(height - lastHeight) >= 1) {
-        lastHeight = height;
-        postMessage({
-          type: 'content-height',
-          height: height,
-          ts: Date.now()
-        });
-      }
-    }
-
-    function queueHeight(force) {
-      if (scheduled && !force) return;
-      scheduled = true;
-      var runner = function () {
-        scheduled = false;
-        sendHeight(force);
-      };
-      if (window.requestAnimationFrame) {
-        window.requestAnimationFrame(runner);
-      } else {
-        setTimeout(runner, 16);
-      }
-    }
-
-    var resizeObserver = null;
-    if (window.ResizeObserver) {
-      resizeObserver = new ResizeObserver(function () {
-        queueHeight(false);
-      });
-      if (document.body) resizeObserver.observe(document.body);
-      if (document.documentElement) resizeObserver.observe(document.documentElement);
-    }
-
-    var mutationObserver = new MutationObserver(function () {
-      queueHeight(false);
-    });
-    mutationObserver.observe(document.documentElement, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      characterData: true
-    });
-
-    ['load', 'resize', 'orientationchange'].forEach(function (type) {
-      window.addEventListener(type, function () {
-        queueHeight(true);
-      });
-    });
-    ['DOMContentLoaded', 'input', 'change', 'click', 'transitionend', 'animationend'].forEach(function (type) {
-      document.addEventListener(type, function () {
-        queueHeight(false);
-      }, true);
-    });
-
-    setTimeout(function () { queueHeight(true); }, 50);
-    setTimeout(function () { queueHeight(true); }, 250);
-    setTimeout(function () { queueHeight(true); }, 900);
-    setInterval(function () { queueHeight(false); }, 1500);
-  })();
-  true;
-`;
-
-const REPORT_HEIGHT_SCRIPT = `
-  (function () {
-    function postHeight() {
-      var body = document.body;
-      var html = document.documentElement;
-      var height = Math.max(
-        body ? body.scrollHeight : 0,
-        body ? body.offsetHeight : 0,
-        html ? html.clientHeight : 0,
-        html ? html.scrollHeight : 0,
-        html ? html.offsetHeight : 0,
-        1
-      );
-      if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-        window.ReactNativeWebView.postMessage(JSON.stringify({
-          type: 'content-height',
-          height: Math.ceil(height),
-          ts: Date.now()
-        }));
-      }
-    }
-
-    if (!window.__RN_HEIGHT_OBSERVER_INSTALLED__) {
-      window.__RN_HEIGHT_OBSERVER_INSTALLED__ = true;
-      if (window.ResizeObserver) {
-        var resizeObserver = new ResizeObserver(function () {
-          postHeight();
-        });
-        if (document.body) resizeObserver.observe(document.body);
-        if (document.documentElement) resizeObserver.observe(document.documentElement);
-      }
-      var mutationObserver = new MutationObserver(function () {
-        postHeight();
-      });
-      mutationObserver.observe(document.documentElement, {
-        subtree: true,
-        childList: true,
-        attributes: true,
-        characterData: true
-      });
-      window.addEventListener('load', postHeight);
-      window.addEventListener('resize', postHeight);
-      document.addEventListener('DOMContentLoaded', postHeight);
-    }
-
-    postHeight();
-    setTimeout(postHeight, 120);
-    setTimeout(postHeight, 450);
-    setTimeout(postHeight, 900);
   })();
   true;
 `;
@@ -251,39 +173,29 @@ type WebAppScreenProps = {
 
 const WebAppScreen = React.forwardRef<WebAppScreenHandle, WebAppScreenProps>(function WebAppScreen({ onNativeScroll }, ref) {
   const webViewRef = useRef<WebViewType>(null);
-  const scrollViewRef = useRef<ScrollView>(null);
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
-  const lastNativeScrollYRef = useRef(0);
-  const [viewportHeight, setViewportHeight] = useState(1);
-  const [webContentHeight, setWebContentHeight] = useState(1);
-  const hasHeightReportRef = useRef(false);
-  const lastScrollLogTsRef = useRef(0);
-  const lastHeightLogTsRef = useRef(0);
+
+  const [loading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [lastError, setLastError] = useState('');
+  const [urlIndex, setUrlIndex] = useState(0);
+  const [useBundledFallback, setUseBundledFallback] = useState(false);
 
   const debugLog = useCallback((...args: unknown[]) => {
-    if (!DEBUG_SCROLL) {
-      return;
-    }
+    if (!DEBUG_SCROLL) return;
     // eslint-disable-next-line no-console
     console.log('[WebAppScreen]', ...args);
   }, []);
 
-  const scrollToTopRef = useRef({
-    scrollToTop: () => {
-      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-      webViewRef.current?.injectJavaScript(`
-        (function () {
-          window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-          if (document && document.documentElement) document.documentElement.scrollTop = 0;
-          if (document && document.body) document.body.scrollTop = 0;
-        })();
-        true;
-      `);
-    },
-  });
-
   const scrollToTop = useCallback(() => {
-    scrollToTopRef.current.scrollToTop();
+    webViewRef.current?.injectJavaScript(`
+      (function () {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        if (document && document.documentElement) document.documentElement.scrollTop = 0;
+        if (document && document.body) document.body.scrollTop = 0;
+      })();
+      true;
+    `);
   }, []);
 
   useImperativeHandle(
@@ -302,28 +214,10 @@ const WebAppScreen = React.forwardRef<WebAppScreenHandle, WebAppScreenProps>(fun
     });
   }, [navigation, scrollToTop]);
 
-  const [loading, setLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [lastError, setLastError] = useState('');
-  const [urlIndex, setUrlIndex] = useState(0);
-  const [useBundledFallback, setUseBundledFallback] = useState(false);
-
   const urls = useMemo(() => getWebAppUrls(), []);
   const url = urls[urlIndex];
   const webSource = useBundledFallback ? BUNDLED_WEBAPP_SOURCE : { uri: url };
   const webSourceKey = useBundledFallback ? 'bundled-webapp-v11' : url;
-  const webViewHeight = Math.max(viewportHeight, webContentHeight);
-  const canScroll = webViewHeight > viewportHeight + 2;
-
-  React.useEffect(() => {
-    debugLog(
-      'layout',
-      `viewport=${viewportHeight}`,
-      `content=${webContentHeight}`,
-      `webViewHeight=${webViewHeight}`,
-      `canScroll=${canScroll}`
-    );
-  }, [canScroll, debugLog, viewportHeight, webContentHeight, webViewHeight]);
 
   const handleReload = () => {
     setUseBundledFallback(false);
@@ -360,66 +254,12 @@ const WebAppScreen = React.forwardRef<WebAppScreenHandle, WebAppScreenProps>(fun
   }
 
   return (
-    <ScrollView
-      ref={scrollViewRef}
-      style={styles.scrollView}
-      contentContainerStyle={styles.scrollContent}
-      scrollEventThrottle={16}
-      onLayout={(event) => {
-        const nextHeight = Math.max(1, Math.round(event.nativeEvent.layout.height));
-        setViewportHeight(nextHeight);
-        debugLog('onLayout', `height=${nextHeight}`);
-      }}
-      onScroll={(event) => {
-        const y = Math.max(0, event.nativeEvent.contentOffset.y);
-        if (onNativeScroll) {
-          const prevY = lastNativeScrollYRef.current;
-          const dy = y - prevY;
-          lastNativeScrollYRef.current = y;
-          const direction: WebNativeScrollSignal['direction'] =
-            dy > 0.5 ? 'down' : dy < -0.5 ? 'up' : 'idle';
-
-          onNativeScroll({
-            y,
-            dy,
-            direction,
-            atTop: y <= 2,
-            velocityY: event.nativeEvent.velocity?.y,
-          });
-        }
-
-        const now = Date.now();
-        if (now - lastScrollLogTsRef.current < 120) {
-          return;
-        }
-        lastScrollLogTsRef.current = now;
-
-        const ch = Math.max(0, event.nativeEvent.contentSize.height);
-        const vh = Math.max(0, event.nativeEvent.layoutMeasurement.height);
-        debugLog('onScroll', `y=${y.toFixed(1)}`, `content=${ch.toFixed(1)}`, `viewport=${vh.toFixed(1)}`);
-      }}
-      onScrollBeginDrag={(event) => {
-        const y = Math.max(0, event.nativeEvent.contentOffset.y);
-        debugLog('onScrollBeginDrag', `y=${y.toFixed(1)}`);
-      }}
-      onScrollEndDrag={(event) => {
-        const y = Math.max(0, event.nativeEvent.contentOffset.y);
-        debugLog('onScrollEndDrag', `y=${y.toFixed(1)}`);
-      }}
-      onMomentumScrollBegin={(event) => {
-        const y = Math.max(0, event.nativeEvent.contentOffset.y);
-        debugLog('onMomentumScrollBegin', `y=${y.toFixed(1)}`);
-      }}
-      onMomentumScrollEnd={(event) => {
-        const y = Math.max(0, event.nativeEvent.contentOffset.y);
-        debugLog('onMomentumScrollEnd', `y=${y.toFixed(1)}`);
-      }}
-    >
+    <View style={styles.container}>
       <WebView
         key={webSourceKey}
         ref={webViewRef}
         source={webSource}
-        style={[styles.webView, { height: webViewHeight }]}
+        style={styles.webView}
         onLoadStart={() => {
           debugLog('onLoadStart', webSourceKey);
           setLoading(true);
@@ -432,33 +272,24 @@ const WebAppScreen = React.forwardRef<WebAppScreenHandle, WebAppScreenProps>(fun
         }}
         onLoadEnd={() => {
           debugLog('onLoadEnd', webSourceKey);
-          hasHeightReportRef.current = false;
-          setWebContentHeight((prev) => Math.max(prev, viewportHeight * 2));
-          webViewRef.current?.injectJavaScript(REPORT_HEIGHT_SCRIPT);
-          setTimeout(() => {
-            if (!hasHeightReportRef.current) {
-              const fallbackHeight = Math.max(viewportHeight * 6, 3000);
-              debugLog('height-fallback', fallbackHeight);
-              setWebContentHeight((prev) => Math.max(prev, fallbackHeight));
-            }
-          }, 1200);
+          webViewRef.current?.injectJavaScript(NO_ZOOM_SCRIPT);
           setLoading(false);
         }}
         onMessage={(event) => {
           try {
-            const payload = JSON.parse(event.nativeEvent.data) as { type?: string; height?: number } | undefined;
-            if (payload?.type === 'content-height' && Number.isFinite(payload.height)) {
-              const nextHeight = Math.max(1, Math.ceil(payload.height ?? 1));
-              hasHeightReportRef.current = true;
-              const now = Date.now();
-              if (now - lastHeightLogTsRef.current > 250) {
-                lastHeightLogTsRef.current = now;
-                debugLog('content-height', nextHeight);
-              }
-              setWebContentHeight(nextHeight);
+            const payload = JSON.parse(event.nativeEvent.data) as WebNativeScrollSignal & { type?: string };
+            if (payload?.type !== 'native-scroll' || !onNativeScroll) {
+              return;
             }
+            onNativeScroll({
+              y: Number.isFinite(payload.y) ? payload.y : 0,
+              dy: Number.isFinite(payload.dy) ? payload.dy : 0,
+              direction: payload.direction === 'up' || payload.direction === 'down' ? payload.direction : 'idle',
+              atTop: payload.atTop === true || (Number.isFinite(payload.y) ? payload.y <= 2 : false),
+              velocityY: Number.isFinite(payload.velocityY) ? payload.velocityY : undefined,
+            });
           } catch {
-            // Ignore non-JSON messages from the page.
+            // Ignore non-JSON messages.
           }
         }}
         onError={(event) => {
@@ -466,6 +297,7 @@ const WebAppScreen = React.forwardRef<WebAppScreenHandle, WebAppScreenProps>(fun
           if (isIgnorableWebViewError(nativeEvent)) {
             return;
           }
+
           debugLog('onError', nativeEvent);
 
           const nextIndex = urlIndex + 1;
@@ -492,41 +324,47 @@ const WebAppScreen = React.forwardRef<WebAppScreenHandle, WebAppScreenProps>(fun
         javaScriptEnabled
         domStorageEnabled
         injectedJavaScriptBeforeContentLoaded={NO_ZOOM_SCRIPT}
+        injectedJavaScript={NO_ZOOM_SCRIPT}
         scalesPageToFit={false}
         setBuiltInZoomControls={false}
         setDisplayZoomControls={false}
         originWhitelist={['*']}
-        scrollEnabled={false}
+        scrollEnabled
         bounces={false}
-        nestedScrollEnabled={false}
+        nestedScrollEnabled
+        overScrollMode="never"
+        androidLayerType="software"
       />
       {loading ? (
-        <View style={styles.loadingIndicatorWrap}>
+        <View style={styles.loadingOverlay} pointerEvents="none">
           <ActivityIndicator size="small" color={Colors.primary} />
         </View>
       ) : null}
-    </ScrollView>
+    </View>
   );
 });
 
 export default WebAppScreen;
 
 const styles = StyleSheet.create({
-  scrollView: {
+  container: {
     flex: 1,
     backgroundColor: Colors.surface,
   },
-  scrollContent: {
-    flexGrow: 1,
-    minHeight: '100%',
-  },
   webView: {
-    width: '100%',
+    flex: 1,
     backgroundColor: Colors.surface,
   },
-  loadingIndicatorWrap: {
-    paddingVertical: 12,
+  loadingOverlay: {
+    position: 'absolute',
+    right: 12,
+    bottom: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.9)',
   },
   errorWrap: {
     flex: 1,
